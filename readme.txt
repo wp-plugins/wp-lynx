@@ -16,7 +16,7 @@ Don't see your language on the list? Feel free to translate WP Lynx and send Joh
 
 == Installation ==
 
-Please visit [Breadcrumb NavXT's](http://mtekk.weblogs.us/code/wp-lynx/#installation "WP Lynx's project page's installation section.") project page for installation and usage instructions.
+Please visit [WP Lynx's](http://mtekk.weblogs.us/code/wp-lynx/#installation "WP Lynx's project page's installation section.") project page for installation and usage instructions.
 
 == Changelog ==
 = 0.1.2 =
