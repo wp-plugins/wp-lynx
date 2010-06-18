@@ -500,8 +500,18 @@ class linksLynx extends mtekk_admin
 					{
 						?>
 						<div class="media-item child-of-<?php echo $curID; ?> preloaded" id="media-item-<?php echo $key; ?>">
-							<?php printf(__('Error while retrieving %s', 'wp_links_lynx'), $url)?>
-							<blockquote><?php echo $this->llynx_scrape->error;?></blockquote>
+							<?php printf(__('Error while retrieving %s', 'wp_links_lynx'), $url);?>
+							<blockquote>
+								<?php
+									if(is_array($this->llynx_scrape->error))
+									{
+										var_dump($this->llynx_scrape->error);
+									}
+									else
+									{
+										echo $this->llynx_scrape->error;
+									}?>
+							</blockquote>
 						</div>
 						<?php
 						continue;
