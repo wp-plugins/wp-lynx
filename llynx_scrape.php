@@ -54,7 +54,7 @@ class llynxScrape
 			$curlOpt = array(
 				CURLOPT_RETURNTRANSFER	=> true,		// Return web page
 				CURLOPT_HEADER			=> false,		// Don't return headers
-				CURLOPT_FOLLOWLOCATION	=> true,		// Follow redirects
+				CURLOPT_FOLLOWLOCATION	=> !ini_get('safe_mode'),		// Follow redirects, if not in safemode
 				CURLOPT_ENCODING		=> '',			// Handle all encodings
 				CURLOPT_USERAGENT		=> $this->opt['curl_agent'],		// Useragent
 				CURLOPT_AUTOREFERER		=> true,		// Set referer on redirect
@@ -95,6 +95,7 @@ class llynxScrape
 	function scrapeContent($url)
 	{
 		//Get our content
+		//$content =  mb_convert_encoding($this->getContent($url), "UTF-8", "WINDOWS-1251");
 		$content = $this->getContent($url);
 		//Extract images on the page
 		$this->findImages($content, $url);
