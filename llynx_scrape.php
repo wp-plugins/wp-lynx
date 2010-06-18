@@ -95,14 +95,24 @@ class llynxScrape
 	function scrapeContent($url)
 	{
 		//Get our content
-		//$content =  mb_convert_encoding($this->getContent($url), "UTF-8", "WINDOWS-1251");
 		$content = $this->getContent($url);
+		//Convert to UTF-8
+		$content =  mb_convert_encoding($content, "UTF-8", $this->findEncoding($content));
 		//Extract images on the page
 		$this->findImages($content, $url);
 		//Extract a few paragraphs from the page
 		$this->findText($content);
 		//Extract the page title
 		$this->findTitle($content);
+	}
+	function findEncoding($content)
+	{
+		//Find the charset meta attribute
+		preg_match_all('~charset\=.*?(\'|\"|\s)~i', $content, $matches);
+		//Trim out everything we don't need
+		$matches = preg_replace('/(charset|\=|\'|\"|\s)/', '', $matches[0]);
+		//Return the charset in uppercase so that mb_convert_encoding can work it's magic
+		return strtoupper($matches[0]);
 	}
 	function findImages($content, $baseURL)
 	{
