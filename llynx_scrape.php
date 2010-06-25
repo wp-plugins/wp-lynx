@@ -112,7 +112,14 @@ class llynxScrape
 		//Trim out everything we don't need
 		$matches = preg_replace('/(charset|\=|\'|\"|\s)/', '', $matches[0]);
 		//Return the charset in uppercase so that mb_convert_encoding can work it's magic
-		return strtoupper($matches[0]);
+		if(strtoupper($matches[0]) == '')
+		{
+			return 'auto';
+		}
+		else
+		{
+			return strtoupper($matches[0]);
+		}
 	}
 	function findImages($content, $baseURL)
 	{
