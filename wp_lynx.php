@@ -233,7 +233,7 @@ class linksLynx extends mtekk_admin
 		//Find the url for the image, use nice functions
 		$imgSrc = plugins_url('wp-lynx/llynx.png');
 		//The hyperlink title
-		$title = __('Add a Link Print', 'wp_links_lynx');
+		$title = __('Add a Lynx Print', 'wp_links_lynx');
 		//Append our link to the current context
 		$context .= sprintf('<a title="%s" href="%s&amp;type=wp_links_lynx&amp;TB_iframe=true" id="add_lynx_print" class="thickbox"><img src="%s" alt="%s"/></a>', $title, $url, $imgSrc, $this->short_name);
 		return $context;
@@ -445,7 +445,7 @@ class linksLynx extends mtekk_admin
 		</script>
 		<form action="<?php echo $formUrl; ?>&amp;type=wp_links_lynx&amp;TB_iframe=true" method="post" id="llynx_get_url" class="media-upload-form type-form validate">
 			<?php wp_nonce_field('llynx_get_url');?>
-			<h3 class="media-title"><?php _e('Add a Link Print','wp_links_lynx'); ?></h3>
+			<h3 class="media-title"><?php _e('Add a Lynx Print','wp_links_lynx'); ?></h3>
 			<div class="media-item media-blank">
 				<table class="describe">
 					<tbody>
