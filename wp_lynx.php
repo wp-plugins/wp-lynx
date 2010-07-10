@@ -784,7 +784,7 @@ class linksLynx extends mtekk_admin
 								$this->input_radio('cache_type', 'jpeg', __('JPEG'));
 								$this->input_radio('cache_type', 'gif', __('GIF'));
 							?>
-							<span class="setting-description"><?php _e('The image format to use in the local image cache.', 'breadcrumb_navxt'); ?></span>
+							<span class="setting-description"><?php _e('The image format to use in the local image cache.', 'wp_links_lynx'); ?></span>
 						</td>
 					</tr>
 					<?php
