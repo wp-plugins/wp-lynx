@@ -432,6 +432,27 @@ abstract class mtekk_admin
 	<?php
 	}
 	/**
+	 * textbox
+	 * 
+	 * This will output a well formed textbox
+	 * 
+	 * @param string $label
+	 * @param string $option
+	 * @param string $rows [optional]
+	 * @param bool $disable [optional]
+	 * @param string $description [optional]
+	 */
+	function textbox($label, $option, $rows = '3', $disable = false, $description = '')
+	{
+		$optid = $this->get_valid_id($option);?>
+		<p>
+			<label for="<?php echo $optid;?>"><?php echo $label;?></label>
+		</p>
+		<textarea rows="<?php echo $height;?>" class="large-text code" id="<?php echo $optid;?>" name="<?php echo $this->unique_prefix . '_options[' . $option;?>]"><?php echo htmlentities($this->opt[$option], ENT_COMPAT, 'UTF-8');?></textarea><br />
+		<?php if($description !== ''){?><span class="setting-description"><?php echo $description;?></span><?php }?>
+	<?php
+	}
+	/**
 	 * input_check
 	 * 
 	 * This will output a well formed table row for a checkbox input
