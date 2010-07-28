@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WP Lynx\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/wp-lynx\n"
-"POT-Creation-Date: 2010-06-16 23:02+0000\n"
-"PO-Revision-Date: 2010-06-16 18:10-0600\n"
+"POT-Creation-Date: 2010-07-28 23:38+0000\n"
+"PO-Revision-Date: 2010-07-28 18:39-0600\n"
 "Last-Translator: John Havlik <mtekkmonkey@gmail.com>\n"
 "Language-Team: John Havlik <mtekkmonkey@gmail.com>\n"
 "MIME-Version: 1.0\n"
@@ -55,17 +55,17 @@ msgid "Select a XML settings file to upload and import settings from."
 msgstr ""
 
 #: includes/mtekk_admin_class.php:403
-#: wp_lynx.php:727
+#: wp_lynx.php:737
 msgid "Import"
 msgstr ""
 
 #: includes/mtekk_admin_class.php:404
-#: wp_lynx.php:727
+#: wp_lynx.php:737
 msgid "Export"
 msgstr ""
 
 #: includes/mtekk_admin_class.php:405
-#: wp_lynx.php:727
+#: wp_lynx.php:737
 msgid "Reset"
 msgstr ""
 
@@ -79,7 +79,7 @@ msgstr ""
 
 #: wp_lynx.php:236
 #: wp_lynx.php:448
-msgid "Add a Link Print"
+msgid "Add a Lynx Print"
 msgstr ""
 
 #: wp_lynx.php:335
@@ -99,12 +99,12 @@ msgid "All Tabs:"
 msgstr ""
 
 #: wp_lynx.php:471
-#: wp_lynx.php:514
+#: wp_lynx.php:524
 msgid "Show"
 msgstr ""
 
 #: wp_lynx.php:471
-#: wp_lynx.php:515
+#: wp_lynx.php:525
 msgid "Hide"
 msgstr ""
 
@@ -141,204 +141,204 @@ msgstr ""
 msgid "Error while retrieving %s"
 msgstr ""
 
-#: wp_lynx.php:543
+#: wp_lynx.php:553
 msgid "No Thumbnail"
 msgstr ""
 
-#: wp_lynx.php:575
+#: wp_lynx.php:585
 msgid "Insert into Post"
 msgstr ""
 
-#: wp_lynx.php:575
+#: wp_lynx.php:585
 msgid "Delete"
 msgstr ""
 
-#: wp_lynx.php:585
+#: wp_lynx.php:595
 msgid "Insert All"
 msgstr ""
 
-#: wp_lynx.php:643
+#: wp_lynx.php:653
 #, php-format
 msgid "Tips for the settings are located below select options. Please refer to the %sdocumentation%s for more information."
 msgstr ""
 
-#: wp_lynx.php:644
+#: wp_lynx.php:654
 msgid "Go to the Links Lynx online documentation"
 msgstr ""
 
-#: wp_lynx.php:685
+#: wp_lynx.php:695
 msgid "All of your current WP Lynx settings will be overwritten with the default values. Are you sure you want to continue?"
 msgstr ""
 
-#: wp_lynx.php:688
+#: wp_lynx.php:698
 msgid "All of your current WP Lynx settings will be overwritten with the imported values. Are you sure you want to continue?"
 msgstr ""
 
-#: wp_lynx.php:750
+#: wp_lynx.php:760
 msgid "WP Lynx Settings"
 msgstr ""
 
-#: wp_lynx.php:758
+#: wp_lynx.php:768
 msgid "General"
 msgstr ""
 
-#: wp_lynx.php:761
+#: wp_lynx.php:771
 msgid "Default Style"
 msgstr ""
 
-#: wp_lynx.php:761
+#: wp_lynx.php:771
 msgid "Enable the default Lynx Prints styling on your blog."
 msgstr ""
 
-#: wp_lynx.php:762
+#: wp_lynx.php:772
 msgid "Maximum Image Width"
 msgstr ""
 
-#: wp_lynx.php:762
+#: wp_lynx.php:772
 msgid "Maximum cached image width in pixels."
 msgstr ""
 
-#: wp_lynx.php:763
+#: wp_lynx.php:773
 msgid "Maximum Image Height"
 msgstr ""
 
-#: wp_lynx.php:763
+#: wp_lynx.php:773
 msgid "Maximum cached image height in pixels."
 msgstr ""
 
-#: wp_lynx.php:764
+#: wp_lynx.php:774
 msgid "Crop Image"
 msgstr ""
 
-#: wp_lynx.php:764
+#: wp_lynx.php:774
 msgid "Crop images in the cache to the above dimensions."
 msgstr ""
 
-#: wp_lynx.php:768
+#: wp_lynx.php:778
 msgid "Cached Image Format"
 msgstr ""
 
-#: wp_lynx.php:772
+#: wp_lynx.php:782
 msgid "Same as source format"
 msgstr ""
 
-#: wp_lynx.php:773
+#: wp_lynx.php:783
 msgid "PNG"
 msgstr ""
 
-#: wp_lynx.php:774
+#: wp_lynx.php:784
 msgid "JPEG"
 msgstr ""
 
-#: wp_lynx.php:775
+#: wp_lynx.php:785
 msgid "GIF"
 msgstr ""
 
-#: wp_lynx.php:777
+#: wp_lynx.php:787
 msgid "The image format to use in the local image cache."
 msgstr ""
 
-#: wp_lynx.php:781
+#: wp_lynx.php:791
 msgid "Cache Image Quality"
 msgstr ""
 
-#: wp_lynx.php:781
+#: wp_lynx.php:791
 msgid "Image quality when cached images are saved as JPEG."
 msgstr ""
 
-#: wp_lynx.php:786
+#: wp_lynx.php:796
 msgid "Images"
 msgstr ""
 
-#: wp_lynx.php:789
+#: wp_lynx.php:799
 msgid "Minimum Image Width"
 msgstr ""
 
-#: wp_lynx.php:789
+#: wp_lynx.php:799
 msgid "Minimum width of images to scrape in pixels."
 msgstr ""
 
-#: wp_lynx.php:790
+#: wp_lynx.php:800
 msgid "Minimum Image Height"
 msgstr ""
 
-#: wp_lynx.php:790
+#: wp_lynx.php:800
 msgid "Minimum hieght of images to scrape in pixels."
 msgstr ""
 
-#: wp_lynx.php:791
+#: wp_lynx.php:801
 msgid "Maximum Image Count"
 msgstr ""
 
-#: wp_lynx.php:791
+#: wp_lynx.php:801
 msgid "Maximum number of images to scrape."
 msgstr ""
 
-#: wp_lynx.php:792
+#: wp_lynx.php:802
 msgid "Maximum Image Scrape Size"
 msgstr ""
 
-#: wp_lynx.php:792
+#: wp_lynx.php:802
 msgid "Maximum number of bytes to download when determining the dimensions of JPEG images."
 msgstr ""
 
-#: wp_lynx.php:797
+#: wp_lynx.php:807
 msgid "Text"
 msgstr ""
 
-#: wp_lynx.php:800
+#: wp_lynx.php:810
 msgid "Minimum Paragraph Length"
 msgstr ""
 
-#: wp_lynx.php:800
+#: wp_lynx.php:810
 msgid "Minimum paragraph length to be scraped (in characters)."
 msgstr ""
 
-#: wp_lynx.php:801
+#: wp_lynx.php:811
 msgid "Maximum Paragraph Length"
 msgstr ""
 
-#: wp_lynx.php:801
+#: wp_lynx.php:811
 msgid "Maximum paragraph length before it is cutt off (in characters)."
 msgstr ""
 
-#: wp_lynx.php:802
+#: wp_lynx.php:812
 msgid "Minimum Paragraph Count"
 msgstr ""
 
-#: wp_lynx.php:802
+#: wp_lynx.php:812
 msgid "Maximum number of paragraphs to scrape."
 msgstr ""
 
-#: wp_lynx.php:807
+#: wp_lynx.php:817
 msgid "Advanced"
 msgstr ""
 
-#: wp_lynx.php:810
+#: wp_lynx.php:820
 msgid "Timeout"
 msgstr ""
 
-#: wp_lynx.php:810
+#: wp_lynx.php:820
 msgid "Maximum time for scrape execution in seconds."
 msgstr ""
 
-#: wp_lynx.php:811
+#: wp_lynx.php:821
 msgid "Useragent"
 msgstr ""
 
-#: wp_lynx.php:811
+#: wp_lynx.php:821
 msgid "Useragent to use during scrape execution."
 msgstr ""
 
-#: wp_lynx.php:812
+#: wp_lynx.php:822
 msgid "Emulate Browser"
 msgstr ""
 
-#: wp_lynx.php:812
+#: wp_lynx.php:822
 msgid "Useragent will be exactly as the users's browser."
 msgstr ""
 
-#: wp_lynx.php:817
+#: wp_lynx.php:827
 msgid "Save Changes"
 msgstr ""
 
