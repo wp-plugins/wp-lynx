@@ -153,8 +153,12 @@ class llynxScrape
 			//Make sure we fix any relative URLs
 			$fixedURL = $this->urlFix($baseURL, $image['src']);
 			$size = array('0','0');
-			//If the HTML told us the height, great
-			if($image['width'] > 0 && $image['height'] > 0)
+			//Find the extension
+			$extension = explode('.', $image['src']);
+			//The extension should be the stuff after the last '.', make sure its lower case
+			$extension = strtolower(end($extension));
+			//If the HTML told us the height, great, ignore for gif as it may be used in a html/CSS hack
+			if($image['width'] > 0 && $image['height'] > 0 && $extension != 'gif')
 			{
 				$size[0] = $image['width'];
 				$size[1] = $image['height'];
@@ -162,11 +166,7 @@ class llynxScrape
 			//If not, let's try to find it manually
 			else
 			{	
-				//Find the extension
 				$range = '0-';
-				$extension = explode('.', $image['src']);
-				//The extension should be the stuff after the last '.', make sure its lower case
-				$extension = strtolower(end($extension));
 				//If it is PNG we can transfer less
 				if($extension == 'png')
 				{
