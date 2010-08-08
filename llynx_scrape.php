@@ -98,6 +98,8 @@ class llynxScrape
 		$content = $this->getContent($url);
 		//Convert to UTF-8
 		$content =  mb_convert_encoding($content, "UTF-8", $this->findEncoding($content));
+		//Strip any script tags
+		$content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', ' ',$content);
 		//Extract images on the page
 		$this->findImages($content, $url);
 		//Extract a few paragraphs from the page
@@ -130,7 +132,10 @@ class llynxScrape
 		foreach($matches[1] as $str)
 		{
 			preg_match_all('~([a-z]([a-z0-9]*)?)=("|\')(.*?)("|\')~is', $str, $pairs);
-			$rawImages[] = array_combine($pairs[1],$pairs[4]);
+			if(count($pairs[1]) > 0)
+			{
+				$rawImages[] = array_combine($pairs[1],$pairs[4]);
+			}
 		}
 		$this->images = array();
 		foreach($rawImages as $image)
