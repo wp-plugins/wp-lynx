@@ -1,6 +1,6 @@
 === WP Lynx ===
 Contributors: mtekk
-Tags: Links, Facebook
+Tags: Links, Facebook, post, posts
 Requires at least: 2.9
 Tested up to: 3.0.1
 Stable tag: 0.1.3
@@ -16,7 +16,7 @@ Don't see your language on the list? Feel free to translate WP Lynx and send Joh
 
 == Installation ==
 
-Please visit [WP Lynx's](http://mtekk.weblogs.us/code/wp-lynx/#installation "WP Lynx's project page's installation section.") project page for installation and usage instructions.
+Please visit [WP Lynx's](http://mtekk.us/code/wp-lynx/#installation "WP Lynx's project page's installation section.") project page for installation and usage instructions.
 
 == Changelog ==
 = 0.1.3 =

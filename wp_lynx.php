@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: WP Lynx
-Plugin URI: http://mtekk.weblogs.us/code/wp-lynx/
-Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.weblogs.us/code/wp-lynx/">WP Lynx</a>. 
+Plugin URI: http://mtekk.us/code/wp-lynx/
+Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.us/code/wp-lynx/">WP Lynx</a>. 
 Version: 0.1.3
 Author: John Havlik
-Author URI: http://mtekk.weblogs.us/
+Author URI: http://mtekk.us/
 */
 /*  
 	Copyright 2010  John Havlik  (email : mtekkmonkey@gmail.com)
@@ -78,7 +78,7 @@ class linksLynx extends mtekk_admin
 	{
 		$this->llynx_scrape = new llynxScrape(null);
 		//We set the plugin basename here, could manually set it, but this is for demonstration purposes
-		$this->plugin_base = plugin_basename(__FILE__);
+		$this->plugin_basename = plugin_basename(__FILE__);
 		//We'll include a defualt style that everyone can enjoy
 		add_action('wp_head', array($this, 'head_style'));
 		//We're going to make sure we load the parent's constructor
@@ -107,6 +107,7 @@ class linksLynx extends mtekk_admin
 		add_action('wp_print_scripts', array($this, 'javascript'));
 		add_action('media_buttons_context', array($this, 'media_buttons_context'));
 		add_action('media_upload_wp_links_lynx', array($this, 'media_upload'));
+		add_filter('tiny_mce_before_init', array($this, 'add_editor_style'));
 	}
 	/**
 	 * security
@@ -215,6 +216,23 @@ class linksLynx extends mtekk_admin
 		//Let the user know everything went ok
 		$this->message['updated fade'][] = __('Settings successfully saved.', $this->identifier);
 		add_action('admin_notices', array($this, 'message'));
+	}
+	/**
+	 * 
+	 */
+	function add_editor_style($init)
+	{
+		//build out style link, needs to be http accessible
+		$style = plugins_url('/wp_lynx_tinyMCEstyle.css', dirname(__FILE__) . '/wp_lynx_tinyMCEstyle.css');
+		if(array_key_exists('content_css',$init))
+		{
+			$init['content_css'] .= ',' . $style;
+		}
+		else
+		{
+			$init['content_css'] = $style;
+		}
+		return $init;
 	}
 	/**
 	 * media_buttons_context
@@ -602,7 +620,7 @@ class linksLynx extends mtekk_admin
 	{
 		?>
 <style type="text/css">
-/*WP Links Lynx Admin Styles*/
+/*WP Lynx Admin Styles*/
 .describe td{vertical-align:top;}
 .describe textarea{height:5em;}
 .A1B1{width:128px;float:left;}
@@ -619,7 +637,7 @@ class linksLynx extends mtekk_admin
 		{
 		?>
 <style type="text/css">
-/*WP Links Lynx Admin Styles*/
+/*WP Lynx Styles*/
 .llynx_print{margin:10px;padding:5px;display:block;float:left;border:1px solid #999;}
 .llynx_print img{padding:5px;border:none;width:20%;float:left;}
 .llynx_text{float:right;width:70%;}
