@@ -3,7 +3,7 @@
 Plugin Name: WP Lynx
 Plugin URI: http://mtekk.us/code/wp-lynx/
 Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.us/code/wp-lynx/">WP Lynx</a>. 
-Version: 0.1.3
+Version: 0.1.90
 Author: John Havlik
 Author URI: http://mtekk.us/
 */
@@ -24,6 +24,12 @@ Author URI: http://mtekk.us/
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
+//Do a PHP version check, require 5.2 or newer
+if(version_compare(PHP_VERSION, '5.2.0', '<'))
+{
+	sprintf(__('Your PHP version is too old, please upgrade to a newer version. Your version is %s, this plugin requires %s', 'wp_lynx'), phpversion(), '5.2.0');
+	die();
+}
 //Include admin base class
 if(!class_exists('mtekk_admin'))
 {
@@ -44,7 +50,7 @@ class linksLynx extends mtekk_admin
 	 * 
 	 * @var   string
 	 */
-	protected $version = '0.1.3';
+	protected $version = '0.1.90';
 	protected $full_name = 'WP Lynx Settings';
 	protected $short_name = 'WP Lynx';
 	protected $access_level = 'manage_options';
@@ -139,33 +145,36 @@ class linksLynx extends mtekk_admin
 		{
 			//Split up the db version into it's components
 			list($major, $minor, $release) = explode('.', $db_version);
-			$this->opt = $this->get_option('llynx_options');
-			if(!$this->opt)
+			$opts = $this->get_option('llynx_options');
+			//Upgrading to 0.2
+			if($major == 0 && $minor < 2)
 			{
-				$this->opt = array(
-					'global_style' => true,
-					'p_max_count' => 5,
-					'p_min_length' => 120,
-					'p_max_length' => 180,
-					'img_max_count' => 20,
-					'img_min_x' => 50, 
-					'img_min_y' => 50,
-					'img_max_range' => 256,
-					'curl_agent' => 'WP Links Bot',
-					'curl_embrowser' => false,
-					'curl_timeout' => 3,
-					'backlink' => false,
-					'trends' => false,
-					'cache_type' => 'original',
-					'cache_quality' => 80,
-					'cache_max_x' => 100,
-					'cache_max_y' => 100,
-					'cache_crop' => false);
+				//Added post_ prefix to avoid conflicts with custom taxonomies
+				$opts['post_page_prefix'] = $opts['page_prefix'];
+				$opts['post_page_suffix'] = $opts['page_suffix'];
+				$opts['post_page_anchor'] = $opts['page_anchor'];
+				$opts['post_post_prefix'] = $opts['post_prefix'];
+				$opts['post_post_suffix'] = $opts['post_suffix'];
+				$opts['post_post_anchor'] = $opts['post_anchor'];
+				$opts['post_post_taxonomy_display'] = $opts['post_taxonomy_display'];
+				$opts['post_post_taxonomy_type'] = $opts['post_taxonomy_type'];
+				//Update to non-autoload db version
+				$this->delete_option('llynx_version');
+				$this->add_option('llynx_version', $this->version, false);
+				$this->add_option('llynx_options_bk', $this->opt, false);
+			}
+			if(!$opts)
+			{
+				$opts = $this->opt;
+				//Add the options
+				$this->add_option('llynx_options', $opts);
+				$this->add_option('llynx_version', $this->version, false);
+				$this->add_option('llynx_options_bk', $opts, false);
 			}
 			//Always have to update the version
 			$this->update_option('llynx_version', $this->version);
 			//Store the options
-			$this->add_option('llynx_options', $this->opt);
+			$this->add_option('llynx_options', $opt);
 		}
 	}
 	/**
@@ -180,6 +189,10 @@ class linksLynx extends mtekk_admin
 		$this->security();
 		//Do a nonce check, prevent malicious link/form problems
 		check_admin_referer('llynx_options-options');
+		//Update local options from database
+		$this->opt = $this->get_option('llynx_options');
+		//Update our backup options
+		$this->update_option('llynx_options_bk', $this->opt);
 		//Grab our incomming array (the data is dirty)
 		$input = $_POST['llynx_options'];
 		//Loop through all of the existing options (avoids random setting injection)
@@ -214,7 +227,7 @@ class linksLynx extends mtekk_admin
 		//Commit the option changes
 		$this->update_option('llynx_options', $this->opt);
 		//Let the user know everything went ok
-		$this->message['updated fade'][] = __('Settings successfully saved.', $this->identifier);
+		$this->message['updated fade'][] = __('Settings successfully saved.', $this->identifier) . $this->undo_anchor(__('Undo the options save.', $this->identifier));
 		add_action('admin_notices', array($this, 'message'));
 	}
 	/**
@@ -774,6 +787,7 @@ class linksLynx extends mtekk_admin
 	{
 		global $wp_taxonomies;
 		$this->security();
+		$this->version_check($this->get_option($this->unique_prefix . '_version'));
 		?>
 		<div class="wrap"><h2><?php _e('WP Lynx Settings', 'wp_links_lynx'); ?></h2>		
 		<p<?php if($this->_has_contextual_help): ?> class="hide-if-js"<?php endif; ?>><?php 
