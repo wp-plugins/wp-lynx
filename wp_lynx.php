@@ -3,7 +3,7 @@
 Plugin Name: WP Lynx
 Plugin URI: http://mtekk.us/code/wp-lynx/
 Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.us/code/wp-lynx/">WP Lynx</a>. 
-Version: 0.1.90
+Version: 0.2.0
 Author: John Havlik
 Author URI: http://mtekk.us/
 */
@@ -50,7 +50,7 @@ class linksLynx extends mtekk_admin
 	 * 
 	 * @var   string
 	 */
-	protected $version = '0.1.90';
+	protected $version = '0.2.0';
 	protected $full_name = 'WP Lynx Settings';
 	protected $short_name = 'WP Lynx';
 	protected $access_level = 'manage_options';
@@ -682,7 +682,7 @@ class linksLynx extends mtekk_admin
 	protected function _get_help_text()
 	{
 		return sprintf(__('Tips for the settings are located below select options. Please refer to the %sdocumentation%s for more information.', 'wp_links_lynx'), 
-			'<a title="' . __('Go to the Links Lynx online documentation', 'wp_links_lynx') . '" href="http://mtekk.weblogs.us/code/wp-lynx/wp-lynx-doc/">', '</a>');
+			'<a title="' . __('Go to the Links Lynx online documentation', 'wp_links_lynx') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>');
 	}
 	/**
 	 * admin_head
@@ -720,19 +720,6 @@ class linksLynx extends mtekk_admin
 		llynx_context_init();
 		llynx_tabulator_init();		
 	 });
-	function llynx_confirm(type)
-	{
-		if(type == 'reset'){
-			var answer = confirm("<?php _e('All of your current WP Lynx settings will be overwritten with the default values. Are you sure you want to continue?', 'wp_links_lynx'); ?>");
-		}
-		else{
-			var answer = confirm("<?php _e('All of your current WP Lynx settings will be overwritten with the imported values. Are you sure you want to continue?', 'wp_links_lynx'); ?>");
-		}
-		if(answer)
-			return true;
-		else
-			return false;
-	}
 	/**
 	 * Tabulator Bootup
 	 */
