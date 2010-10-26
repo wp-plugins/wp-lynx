@@ -174,7 +174,7 @@ class linksLynx extends mtekk_admin
 			//Always have to update the version
 			$this->update_option('llynx_version', $this->version);
 			//Store the options
-			$this->add_option('llynx_options', $opt);
+			$this->add_option('llynx_options', $opts);
 		}
 	}
 	/**
