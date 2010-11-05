@@ -147,22 +147,15 @@ class linksLynx extends mtekk_admin
 			list($major, $minor, $release) = explode('.', $db_version);
 			$opts = $this->get_option('llynx_options');
 			//Upgrading to 0.2
-			if($major == 0 && $minor < 2)
+			if($opts && $major == 0 && $minor < 2)
 			{
-				//Added post_ prefix to avoid conflicts with custom taxonomies
-				$opts['post_page_prefix'] = $opts['page_prefix'];
-				$opts['post_page_suffix'] = $opts['page_suffix'];
-				$opts['post_page_anchor'] = $opts['page_anchor'];
-				$opts['post_post_prefix'] = $opts['post_prefix'];
-				$opts['post_post_suffix'] = $opts['post_suffix'];
-				$opts['post_post_anchor'] = $opts['post_anchor'];
-				$opts['post_post_taxonomy_display'] = $opts['post_taxonomy_display'];
-				$opts['post_post_taxonomy_type'] = $opts['post_taxonomy_type'];
 				//Update to non-autoload db version
 				$this->delete_option('llynx_version');
 				$this->add_option('llynx_version', $this->version, false);
 				$this->add_option('llynx_options_bk', $this->opt, false);
 			}
+			//Always have to update the version
+			$this->update_option('llynx_version', $this->version);
 			if(!$opts)
 			{
 				$opts = $this->opt;
@@ -171,10 +164,11 @@ class linksLynx extends mtekk_admin
 				$this->add_option('llynx_version', $this->version, false);
 				$this->add_option('llynx_options_bk', $opts, false);
 			}
-			//Always have to update the version
-			$this->update_option('llynx_version', $this->version);
-			//Store the options
-			$this->add_option('llynx_options', $opts);
+			else
+			{
+				//Store the options
+				$this->add_option('llynx_options', $opts);
+			}
 		}
 	}
 	/**
