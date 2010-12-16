@@ -145,7 +145,7 @@ class llynxScrape
 			{
 				return null;
 			}
-			if(strpos('width', $image['style']) !== false)
+			if(isset($image['style']) && strpos('width', $image['style']) !== false)
 			{
 				preg_match_all('~(width|height):(.*?)px~is', $image['style'], $pairs);
 				$tempDims = array_combine($pairs[1], $pairs[2]);
@@ -163,7 +163,7 @@ class llynxScrape
 			//The extension should be the stuff after the last '.', make sure its lower case
 			$extension = strtolower(end($extension));
 			//If the HTML told us the height, great, ignore for gif as it may be used in a html/CSS hack
-			if($image['width'] > 0 && $image['height'] > 0 && $extension != 'gif')
+			if(isset($image['width']) && isset($image['height']) && $image['width'] > 0 && $image['height'] > 0 && $extension != 'gif')
 			{
 				$size[0] = $image['width'];
 				$size[1] = $image['height'];

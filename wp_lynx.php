@@ -421,7 +421,7 @@ class linksLynx extends mtekk_admin
 		//Assemble the link to our special uploader
 		$formUrl = 'media-upload.php?post_id=' . $curID;
 		//Handle the case when we want to insert only one lynx print
-		if($_POST['prints_send'])
+		if(isset($_POST['prints_send']))
 		{
 			//Grab the keys of llynx send
 			$keys = array_keys($_POST['prints_send']);
@@ -433,7 +433,7 @@ class linksLynx extends mtekk_admin
 			media_send_to_editor($this->url_insert_handler($data));
 		}
 		//Handle the case when we want to insert all of the lynx prints
-		if($_POST['prints_send_all'])
+		if(isset($_POST['prints_send_all']))
 		{
 			$html = '';
 			//Loop through all of our prints, adding them to our compiled html
@@ -517,7 +517,7 @@ class linksLynx extends mtekk_admin
 						continue;
 					}
 					//Let's clean up the url before using it
-					$url = html_entity_decode(clean_url($url), ENT_COMPAT, 'UTF-8');
+					$url = html_entity_decode(esc_url($url), ENT_COMPAT, 'UTF-8');
 					//Let's get some data from that url
 					$this->llynx_scrape->scrapeContent($url);
 					//If we didn't get anything, throw error, continue on our way
