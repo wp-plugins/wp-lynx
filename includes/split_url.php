@@ -132,6 +132,7 @@
  */
 function split_url( $url, $decode=FALSE )
 {
+	$parts = array();
 	// Character sets from RFC3986.
 	$xunressub     = 'a-zA-Z\d\-._~\!$&\'()*+,;=';
 	$xpchar        = $xunressub . ':@%';

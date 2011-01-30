@@ -3,7 +3,7 @@
 Plugin Name: WP Lynx
 Plugin URI: http://mtekk.us/code/wp-lynx/
 Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.us/code/wp-lynx/">WP Lynx</a>. 
-Version: 0.2.70
+Version: 0.2.71
 Author: John Havlik
 Author URI: http://mtekk.us/
 */
@@ -47,12 +47,7 @@ if(!class_exists('llynxScrape'))
  */
 class linksLynx extends mtekk_admin
 {
-	/**
-	 * local store for breadcrumb version
-	 * 
-	 * @var   string
-	 */
-	protected $version = '0.2.70';
+	protected $version = '0.2.71';
 	protected $full_name = 'WP Lynx Settings';
 	protected $short_name = 'WP Lynx';
 	protected $access_level = 'manage_options';
@@ -77,7 +72,16 @@ class linksLynx extends mtekk_admin
 					'cache_max_x' => 100,
 					'cache_max_y' => 100,
 					'cache_crop' => false,
-					'short_url' => false);
+					'short_url' => false,
+					'template' => '<div class="llynx_print">%image%<div class="llynx_text"><a title="Go to %title%" href="%url%">%title%</a><small>%url%</small><span>%description%</span></div></div>',
+					'image_template' => '');
+	protected $template_tags = array(
+					'%url%',
+					'%short_url%',
+					'%image%',
+					'%title%',
+					'%description%'
+					);
 	/**
 	 * linksLynx
 	 * 
@@ -179,6 +183,7 @@ class linksLynx extends mtekk_admin
 			if(version_compare($version, '0.3.0', '<'))
 			{
 				$opts['short_url'] = false;
+				$opts['template'] = '<div class="llynx_print">%image%<div class="llynx_text"><a title="Go to %title%" href="%url%">%title%</a><small>%url%</small><span>%description%</span></div></div>';
 			}
 			//Save the passed in opts to the object's option array
 			$this->opt = $opts;
@@ -233,8 +238,23 @@ class linksLynx extends mtekk_admin
 		}
 		//Commit the option changes
 		$this->update_option('llynx_options', $this->opt);
-		//Let the user know everything went ok
-		$this->message['updated fade'][] = __('Settings successfully saved.', $this->identifier) . $this->undo_anchor(__('Undo the options save.', $this->identifier));
+		//Check if known settings match attempted save
+		if(count(array_diff_key($input, $this->opt)) == 0)
+		{
+			//Let the user know everything went ok
+			$this->message['updated fade'][] = __('Settings successfully saved.', $this->identifier) . $this->undo_anchor(__('Undo the options save.', $this->identifier));
+		}
+		else
+		{
+			//Let the user know the following were not saved
+			$this->message['updated fade'][] = __('Some settings were not saved.', $this->identifier) . $this->undo_anchor(__('Undo the options save.', $this->identifier));
+			$temp = __('The following settings were not saved:', $this->identifier);
+			foreach(array_diff_key($input, $this->opt) as $setting => $value)
+			{
+				$temp .= '<br />' . $setting;
+			}
+			$this->message['updated fade'][] = $temp . '<br />' . sprintf(__('Please include this message in your %sbug report%s.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>');
+		}
 		add_action('admin_notices', array($this, 'message'));
 	}
 	/**
@@ -368,15 +388,41 @@ class linksLynx extends mtekk_admin
 	 */
 	function url_insert_handler($data)
 	{
-		$imgHtml = '';
+		$values = array('url' => $data['url'],
+					'short_url' => '',
+					'image' => '',
+					'title' => stripslashes($data['title']),
+					'description' => stripslashes($data['content']));
+		//If the user has enabled short_urls
+		if($this->opt['short_url'])
+		{
+			//Assemble our request URL, in the future more short url services may be supported
+			$url = 'http://tinyurl.com/api-create.php?url=' . urlencode($data['url']);
+			//Use WordPress HTTP API for the request
+			$response = wp_remote_get($url);
+			//If we didn't get an error, replace the short_url value with what we found
+			if(!is_wp_error($response))
+			{
+				//For tinyurl, it will just be the response body
+				$values['short_url'] = esc_url($response['body']);
+			}
+		}
+		//Make sure short_url is never blank
+		else if($values['short_url'] == '')
+		{
+			$values['short_url'] = $values['url'];
+		}
 		//Assemble our title
 		$title = __('Go to', 'wp_lynx') . ' ' . stripslashes($data['title']);
+		
 		//Built the image component, if needed
 		if(!isset($data['nothumb']) && $data['img'] !== NULL)
 		{
+			//Get the upload location
+			$uploadDir = wp_upload_dir();
 			//Grab the image (raw data), use a referrer to avoid issues with anti-hotlinking scripts
 			//If we recieved an error, then we have no image
-			if($imgData = $this->llynx_scrape->getContent($data['img'], $data['url']))
+			if($uploadDir['url'] != NULL && $imgData = $this->llynx_scrape->getContent($data['img'], $data['url']))
 			{
 				//We need to manipulate the url to get the image name
 				$imgName = explode('/', $data['img']);
@@ -384,47 +430,54 @@ class linksLynx extends mtekk_admin
 				$imgExt = explode('.',$imgName);
 				//The extension should be the stuff after the last '.', make sure its lower case
 				$imgExt = strtolower(end($imgExt));
-				//Get the upload location
-				$uploadDir = wp_upload_dir();
 				//Make sure we use a unique filename
-				$fileName = wp_unique_filename($uploadDir[path], $imgName);
+				$fileName = wp_unique_filename($uploadDir['path'], $imgName);
 				//Compile our image location and image URL
-				$imgLoc = $uploadDir[path] . "/$fileName";
-				$imgURL = $uploadDir[url] . "/$fileName";
+				$imgLoc = $uploadDir['path'] . "/$fileName";
+				$imgURL = $uploadDir['url'] . "/$fileName";
 				//Generate the thumbnail
 				$nH = 0;
 				$nW = 0;
 				$imgThumb = $this->resize_image($imgData, $nW, $nH);
+				$saved = false;
 				//If we will be saving as jpeg
 				if($this->opt['cache_type'] == 'jpeg' || ($this->opt['cache_type'] == 'original' && ($imgExt == 'jpg' || $imgExt == 'jpeg')))
 				{
 					//Save as JPEG
-					imagejpeg($imgThumb, $imgLoc, $this->opt['cache_quality']);
+					$saved = imagejpeg($imgThumb, $imgLoc, $this->opt['cache_quality']);
 				}
 				//If we will be saving as png
 				else if($this->opt['cache_type'] == 'png' || ($this->opt['cache_type'] == 'original' && $imgExt == 'png'))
 				{
 					//Save as PNG
-					imagepng($imgThumb, $imgLoc);
+					$saved = imagepng($imgThumb, $imgLoc);
 				}
 				//If we will be saving as gif
 				else
 				{
 					//Save as GIF
-					imagegif($imgThumb, $imgLoc);
+					$saved = imagegif($imgThumb, $imgLoc);
 				}
-				//Verify we have the correct permissions of new file
-				$stat = @stat(dirname($imgLoc));
-				$perms = $stat['mode'] & 0007777;
-				$perms = $perms & 0000666;
-				@chmod($imgLoc, $perms);
-				//Assemble the image and link it, if it exists
-				$imgHtml = sprintf('<a title="%s" href="%s"><img alt="%s" src="%s" width="%s" height="%s" /></a>', $title, $data['url'], stripslashes($data['title']), $imgURL, $nW, $nH);
+				//If the image was saved, we'll allow the image tag to be replaced
+				if($saved)
+				{
+					//Verify we have the correct permissions of new file
+					$stat = @stat(dirname($imgLoc));
+					$perms = $stat['mode'] & 0007777;
+					$perms = $perms & 0000666;
+					@chmod($imgLoc, $perms);
+					//Remove %image% tag from image template, if there is one
+					$this->opt['img_template'] = str_replace('%image%', '', $this->opt['img_template']);
+					//Assemble the image and link it, if it exists
+					$values['image'] = sprintf('<a title="%s" href="%s"><img alt="%s" src="%s" width="%s" height="%s" /></a>', $title, $data['url'], stripslashes($data['title']), $imgURL, $nW, $nH);
+				}
 			}
 		}
-		$urlHtml = sprintf('<a title="%s" href="%s">%s</a>', $title, $data['url'], stripslashes($data['title']));
+		//$urlHtml = sprintf('<a title="%s" href="%s">%s</a>', $title, $data['url'], stripslashes($data['title']));
+		//Replace the template tags with values
+		return str_replace($this->template_tags, $values, $this->opt['template']);
 		//Built the entire html link print and return it
-		return sprintf('<div class="llynx_print">%s <div class="llynx_text">%s <small>%s</small><span>%s</span></div></div>', $imgHtml, $urlHtml, $data['url'], stripslashes($data['content']));
+		//return sprintf('<div class="llynx_print">%s <div class="llynx_text">%s <small>%s</small><span>%s</span></div></div>', $values['image'], $urlHtml, $values['url'], $values['description']);
 	}
 	function url_tab()
 	{
@@ -689,7 +742,8 @@ class linksLynx extends mtekk_admin
 	protected function _get_help_text()
 	{
 		return sprintf(__('Tips for the settings are located below select options. Please refer to the %sdocumentation%s for more information.', 'wp_lynx'), 
-			'<a title="' . __('Go to the Links Lynx online documentation', 'wp_lynx') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>');
+			'<a title="' . __('Go to the Links Lynx online documentation', 'wp_lynx') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>') .
+			sprintf(__('If you think you have found a bug, please include your WordPress version and details on how to reporduce the bug when you %sreport the issue%s.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>') . '</p>';
 	}
 	/**
 	 * admin_head
@@ -844,6 +898,7 @@ class linksLynx extends mtekk_admin
 				<h3><?php _e('Advanced', 'wp_lynx'); ?></h3>
 				<table class="form-table">
 					<?php
+						$this->textbox(__('Lynx Print Template', 'wp_lynx'), 'template', 3, false, __('Available tags: ', 'wp_lynx') . implode(', ', $this->template_tags));
 						$this->input_text(__('Timeout', 'wp_lynx'), 'curl_timeout', '10', false, __('Maximum time for scrape execution in seconds.', 'wp_lynx'));
 						$this->input_text(__('Useragent', 'wp_lynx'), 'curl_agent', '32', $this->opt['curl_embrowser'], __('Useragent to use during scrape execution.', 'wp_lynx'));
 						$this->input_check(__('Emulate Browser', 'wp_lynx'), 'curl_embrowser', __("Useragent will be exactly as the users's browser.", 'wp_lynx'));
