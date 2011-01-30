@@ -412,9 +412,6 @@ class linksLynx extends mtekk_admin
 		{
 			$values['short_url'] = $values['url'];
 		}
-		//Assemble our title
-		$title = __('Go to', 'wp_lynx') . ' ' . stripslashes($data['title']);
-		
 		//Built the image component, if needed
 		if(!isset($data['nothumb']) && $data['img'] !== NULL)
 		{
@@ -469,7 +466,7 @@ class linksLynx extends mtekk_admin
 					//Remove %image% tag from image template, if there is one
 					$this->opt['img_template'] = str_replace('%image%', '', $this->opt['img_template']);
 					//Assemble the image and link it, if it exists
-					$values['image'] = sprintf('<a title="%s" href="%s"><img alt="%s" src="%s" width="%s" height="%s" /></a>', $title, $data['url'], stripslashes($data['title']), $imgURL, $nW, $nH);
+					$values['image'] = sprintf('<a title="Go to %s" href="%s"><img alt="%s" src="%s" width="%s" height="%s" /></a>', stripslashes($data['title']), $data['short_url'], stripslashes($data['title']), $imgURL, $nW, $nH);
 				}
 			}
 		}
@@ -575,6 +572,15 @@ class linksLynx extends mtekk_admin
 			</table>
 			<div id="media-items" class="ui-sortable">
 				<?php
+				$uploadDir = wp_upload_dir();
+				if(!is_writable($uploadDir['path']))
+				{
+					$allow_images = false;
+				}
+				else
+				{
+					$allow_images = true;
+				}
 				foreach($urls as $key => $url)
 				{
 					//If we recieve a blank URL, skip to next iteration
@@ -607,6 +613,10 @@ class linksLynx extends mtekk_admin
 						<?php
 						continue;
 					}
+					if(!$allow_images)
+					{
+						$this->llynx_scrape->images = array();
+					}
 					?>
 				<div class="media-item child-of-<?php echo $curID; ?> preloaded" id="media-item-<?php echo $key; ?>">
 					<input type="hidden" value="image" id="type-of-<?php echo $key; ?>">
@@ -620,7 +630,7 @@ class linksLynx extends mtekk_admin
 						<thead id="media-head-llynx<?php echo $key; ?>" class="media-item-info">
 						<tr valign="top">
 							<td id="thumbnail-head-llynx-<?php echo $key; ?>" class="A1B1">
-								<p class="llynx_thumb"><img style="margin-top: 3px;" alt="" src="<?php echo $this->llynx_scrape->images[0]; ?>" class="thumbnail"></p>
+								<p class="llynx_thumb"><img style="margin-top: 3px;" alt="" src="<?php if($allow_images && count($this->llynx_scrape->images) > 0){echo $this->llynx_scrape->images[0];} ?>" class="thumbnail"></p>
 									<script type="text/javascript">
 										llynx_imgs[<?php echo $key; ?>] = new Array();
 										llynx_cimgs[<?php echo $key; ?>] = 0;
@@ -628,20 +638,29 @@ class linksLynx extends mtekk_admin
 									//Since our keys are not continuous, we need to keep track of them ourselves
 									$kId = 0;
 									//Now output all of the images, hide all of them
-									foreach($this->llynx_scrape->images as $image)
+									if($allow_images && count($this->llynx_scrape->images) > 0)
 									{
-										?>llynx_imgs[<?php echo $key; ?>][<?php echo $kId; ?>] = '<?php echo $image;?>';<?php
-										echo "\n";
-										$kId++;
+										foreach($this->llynx_scrape->images as $image)
+										{
+											?>llynx_imgs[<?php echo $key; ?>][<?php echo $kId; ?>] = '<?php echo $image;?>';<?php
+											echo "\n";
+											$kId++;
+										}
 									}
 									?></script>
 								<p>
-									<input type="button" value="&lt;" class="button disabled" disabled="disabled" onclick="prev_thumb(<?php echo $key; ?>)" id="imgprev-btn-<?php echo $key; ?>">
-									<input type="button" value="&gt;" <?php if(count($this->llynx_scrape->images) <= 1){echo 'disabled="disabled" class="disabled button"';}else{echo 'class="button"';}?> onclick="next_thumb(<?php echo $key; ?>)" id="imgnext-btn-<?php echo $key; ?>">
-									<span id="icount-<?php echo $key; ?>"><?php if(count($this->llynx_scrape->images) < 1){echo '0';}else{echo '1';}?> / <?php echo count($this->llynx_scrape->images); ?></span>
+									<input type="button" value="&lt;" class="button disabled" disabled="disabled" onclick="prev_thumb(<?php echo $key; ?>)" id="imgprev-btn-<?php echo $key; ?>" />
+									<input type="button" value="&gt;" <?php if(!$allow_images || count($this->llynx_scrape->images) <= 1){echo 'disabled="disabled" class="disabled button"';}else{echo 'class="button"';}?> onclick="next_thumb(<?php echo $key; ?>)" id="imgnext-btn-<?php echo $key; ?>" />
+									<span id="icount-<?php echo $key; ?>"><?php if(!$allow_images || count($this->llynx_scrape->images) < 1){echo '0';}else{echo '1';}?> / <?php echo count($this->llynx_scrape->images); ?></span>
 								</p>
 								<p>
-									<input type="checkbox" <?php if(count($this->llynx_scrape->images) < 1){echo 'checked="checked"';}?> onclick="img_toggle(<?php echo $key; ?>)" value="none" id="prints[<?php echo $key; ?>][nothumb]" name="prints[<?php echo $key; ?>][nothumb]"><label for="prints[<?php echo $key; ?>][nothumb]"><?php _e('No Thumbnail', 'wp_lynx'); ?></label>
+									<?php 
+									if(count($this->llynx_scrape->images) < 1)
+									{
+										?><input type="hidden" value="true" id="prints[<?php echo $key; ?>][nothumb]" name="prints[<?php echo $key; ?>][nothumb]" /><?php
+									}
+									?>
+									<input type="checkbox" <?php if(!$allow_images || count($this->llynx_scrape->images) < 1){echo 'checked="checked" disabled="disabled" class="disabled"';}?> onclick="img_toggle(<?php echo $key; ?>)" value="none" id="prints[<?php echo $key; ?>][nothumb]" name="prints[<?php echo $key; ?>][nothumb]" /><label for="prints[<?php echo $key; ?>][nothumb]"><?php _e('No Thumbnail', 'wp_lynx'); ?></label>
 								</p>
 							</td>
 							<td>
@@ -835,6 +854,14 @@ class linksLynx extends mtekk_admin
 	{
 		global $wp_taxonomies;
 		$this->security();
+		$uploadDir = wp_upload_dir();
+		if(!is_writable($uploadDir['path']))
+		{
+			//Let the user know their directory is not writable
+			$this->message['error'][] = __('WordPress uploads directory is not writable, thumbnails will be dissabled.', $this->identifier);
+			//Too late to use normal hook, directly display the message
+			$this->message();
+		}
 		$this->version_check($this->get_option($this->unique_prefix . '_version'));
 		?>
 		<div class="wrap"><h2><?php _e('WP Lynx Settings', 'wp_lynx'); ?></h2>		
