@@ -3,12 +3,12 @@
 Plugin Name: WP Lynx
 Plugin URI: http://mtekk.us/code/wp-lynx/
 Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.us/code/wp-lynx/">WP Lynx</a>. 
-Version: 0.2.71
+Version: 0.2.75
 Author: John Havlik
 Author URI: http://mtekk.us/
 */
 /*  
-	Copyright 2010  John Havlik  (email : mtekkmonkey@gmail.com)
+	Copyright 2010-2011  John Havlik  (email : mtekkmonkey@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ if(!class_exists('llynxScrape'))
  */
 class linksLynx extends mtekk_admin
 {
-	protected $version = '0.2.71';
+	protected $version = '0.2.75';
 	protected $full_name = 'WP Lynx Settings';
 	protected $short_name = 'WP Lynx';
 	protected $access_level = 'manage_options';
@@ -121,6 +121,11 @@ class linksLynx extends mtekk_admin
 		add_action('media_buttons_context', array($this, 'media_buttons_context'));
 		add_action('media_upload_wp_lynx', array($this, 'media_upload'));
 		add_filter('tiny_mce_before_init', array($this, 'add_editor_style'));
+		if(current_user_can('edit_posts') && current_user_can('edit_pages'))
+		{
+			add_filter('mce_external_plugins', array($this, 'add_mce_plugin'));
+			add_filter('mce_buttons', array($this, 'add_mce_button'));
+		}
 	}
 	/**
 	 * security
@@ -258,12 +263,12 @@ class linksLynx extends mtekk_admin
 		add_action('admin_notices', array($this, 'message'));
 	}
 	/**
-	 * 
+	 * Adds a style to tiny mce for Link Prints
 	 */
 	function add_editor_style($init)
 	{
 		//build out style link, needs to be http accessible
-		$style = plugins_url('/wp_lynx_tinyMCEstyle.css', dirname(__FILE__) . '/wp_lynx_tinyMCEstyle.css');
+		$style = plugins_url('/wp_lynx_mce_style.css', dirname(__FILE__) . '/wp_lynx_mce_style.css');
 		if(array_key_exists('content_css',$init))
 		{
 			$init['content_css'] .= ',' . $style;
@@ -273,6 +278,22 @@ class linksLynx extends mtekk_admin
 			$init['content_css'] = $style;
 		}
 		return $init;
+	}
+	/**
+	 * Adds a tiny mce button for WP Lynx
+	 */
+	function add_mce_button($buttons)
+	{
+		$buttons[] = 'add_link_print';
+		return $buttons;
+	}
+	/**
+	 * Registers our script for the tiny mce button
+	 */
+	function add_mce_plugin($plugins)
+	{
+		$plugins['add_link_print'] = plugins_url('/wp_lynx_mce_button.js', dirname(__FILE__) . '/wp_lynx_mce_button.js');
+		return $plugins;
 	}
 	/**
 	 * media_buttons_context
@@ -293,7 +314,7 @@ class linksLynx extends mtekk_admin
 		//The hyperlink title
 		$title = __('Add a Lynx Print', 'wp_lynx');
 		//Append our link to the current context
-		$context .= sprintf('<a title="%s" href="%s&amp;type=wp_lynx&amp;TB_iframe=true" id="add_lynx_print" class="thickbox"><img src="%s" alt="%s"/></a>', $title, $url, $imgSrc, $this->short_name);
+		$context .= sprintf('<a title="%s" href="%s&amp;type=wp_lynx&amp;TB_iframe=true" id="add_link_print" class="thickbox"><img src="%s" alt="%s"/></a>', $title, $url, $imgSrc, $this->short_name);
 		return $context;
 	}
 	/**
