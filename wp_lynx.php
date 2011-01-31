@@ -466,7 +466,7 @@ class linksLynx extends mtekk_admin
 					//Remove %image% tag from image template, if there is one
 					$this->opt['img_template'] = str_replace('%image%', '', $this->opt['img_template']);
 					//Assemble the image and link it, if it exists
-					$values['image'] = sprintf('<a title="Go to %s" href="%s"><img alt="%s" src="%s" width="%s" height="%s" /></a>', stripslashes($data['title']), $data['short_url'], stripslashes($data['title']), $imgURL, $nW, $nH);
+					$values['image'] = sprintf('<a title="Go to %s" href="%s"><img alt="%s" src="%s" width="%s" height="%s" /></a>', stripslashes($data['title']), $values['short_url'], stripslashes($data['title']), $imgURL, $nW, $nH);
 				}
 			}
 		}
