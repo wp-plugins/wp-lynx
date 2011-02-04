@@ -13,31 +13,16 @@
 			// Add Media buttons to fullscreen and handle align buttons for image captions
 			ed.onBeforeExecCommand.add(function(ed, cmd, ui, val, o) {
 				var DOM = tinymce.DOM, n, DL, DIV, cls, a, align;
-				console.debug('Command is to be executed:' + cmd);
 				if ( 'mceFullScreen' == cmd ) {
 					if ( 'mce_fullscreen' != ed.id && DOM.get('add_link_print'))
-						ed.settings.theme_advanced_buttons1 += ',|,add_link_print';
+						ed.settings.theme_advanced_buttons1 += ',add_link_print';
 				}
 			});
 			ed.onInit.add(function(ed) {
-				tinymce.dom.Event.add(ed.getWin(), 'scroll', function(e) {
-					ed.plugins.add_link_print._hideButtons();
-				});
-				tinymce.dom.Event.add(ed.getBody(), 'dragstart', function(e) {
-					ed.plugins.add_link_print._hideButtons();
-				});
+				ed.plugins.add_link_print._hideButtons();
 			});
 			ed.onBeforeExecCommand.add(function(ed, cmd, ui, val) {
 				ed.plugins.add_link_print._hideButtons();
-			});
-
-			ed.onSaveContent.add(function(ed, o) {
-				ed.plugins.add_link_print._hideButtons();
-			});
-
-			ed.onMouseDown.add(function(ed, e) {
-				if ( e.target.nodeName != 'IMG' )
-					ed.plugins.add_link_print._hideButtons();
 			});
 		},
 		_showButtons : function(n, id) {
@@ -63,14 +48,11 @@
 		},
 
 		_hideButtons : function() {
-			if ( !this.mceTout )
-				return;
+			/*if ( !this.mceTout )
+				return;*/
 
-			if ( document.getElementById('wp_editbtns') )
-				tinymce.DOM.hide('wp_editbtns');
-
-			if ( document.getElementById('wp_gallerybtns') )
-				tinymce.DOM.hide('wp_gallerybtns');
+			if ( document.getElementById('content_add_link_print') )
+				tinymce.DOM.hide('content_add_link_print');
 
 			clearTimeout(this.mceTout);
 			this.mceTout = 0;
