@@ -440,7 +440,7 @@ class linksLynx extends mtekk_admin
 			$uploadDir = wp_upload_dir();
 			//Grab the image (raw data), use a referrer to avoid issues with anti-hotlinking scripts
 			//If we recieved an error, then we have no image
-			if($uploadDir['url'] != NULL && $imgData = $this->llynx_scrape->getContent($data['img'], $data['url']))
+			if(isset($uploadDir['path']) && $uploadDir['url'] != NULL && $imgData = $this->llynx_scrape->getContent($data['img'], $data['url']))
 			{
 				//We need to manipulate the url to get the image name
 				$imgName = explode('/', $data['img']);
@@ -594,7 +594,7 @@ class linksLynx extends mtekk_admin
 			<div id="media-items" class="ui-sortable">
 				<?php
 				$uploadDir = wp_upload_dir();
-				if(!is_writable($uploadDir['path']))
+				if(!isset($uploadDir['path']) || !is_writable($uploadDir['path']))
 				{
 					$allow_images = false;
 				}
@@ -876,7 +876,7 @@ class linksLynx extends mtekk_admin
 		global $wp_taxonomies;
 		$this->security();
 		$uploadDir = wp_upload_dir();
-		if(!is_writable($uploadDir['path']))
+		if(!isset($uploadDir['path']) || !is_writable($uploadDir['path']))
 		{
 			//Let the user know their directory is not writable
 			$this->message['error'][] = __('WordPress uploads directory is not writable, thumbnails will be dissabled.', $this->identifier);
