@@ -193,11 +193,11 @@ class llynxScrape
 				//We only want appropriately sized images
 				if($data = $this->getContent($fixedURL, $baseURL, $range))
 				{
-					if($tempSize = $this->getGIFImageXY($data))
+					if(strlen($data) >= 10 && $tempSize = $this->getGIFImageXY($data))
 					{
 						$size = $tempSize;
 					}
-					else if($tempSize = $this->getPNGImageXY($data))
+					else if(strlen($data) >= 24 && $tempSize = $this->getPNGImageXY($data))
 					{
 						$size = $tempSize;
 					}
