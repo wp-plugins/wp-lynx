@@ -3,7 +3,7 @@
 Plugin Name: WP Lynx
 Plugin URI: http://mtekk.us/code/wp-lynx/
 Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.us/code/wp-lynx/">WP Lynx</a>. 
-Version: 0.2.80
+Version: 0.3.0
 Author: John Havlik
 Author URI: http://mtekk.us/
 */
@@ -47,7 +47,7 @@ if(!class_exists('llynxScrape'))
  */
 class linksLynx extends mtekk_admin
 {
-	protected $version = '0.2.80';
+	protected $version = '0.3.0';
 	protected $full_name = 'WP Lynx Settings';
 	protected $short_name = 'WP Lynx';
 	protected $access_level = 'manage_options';
@@ -552,6 +552,24 @@ class linksLynx extends mtekk_admin
 		});
 		-->
 		</script>
+		<div id="media-upload-header"><ul id="sidemenu"><li id="tab-type"><a href="<?php echo $formUrl; ?>&amp;type=wp_lynx&amp;TB_iframe=true" <?php if(!isset($_GET['ltab'])){echo 'class="current"';} ?>>Add Lynx Print</a></li><li><a href="<?php echo $formUrl; ?>&amp;type=wp_lynx&amp;TB_iframe=true&amp;ltab=help" <?php if(isset($_GET['ltab']) && $_GET['ltab'] == 'help'){echo 'class="current"';} ?>>Help</a></li></ul></div>
+		<?php if(isset($_GET['ltab']) && $_GET['ltab'] == 'help')
+		{?>
+			<div style="margin:1em;">
+			<h3 class="media-title"><?php _e('WP Lynx Help','wp_lynx'); ?></h3>
+			<p>
+			<?php _e('The Add Lynx Print dialog is simple to use. Just enter the URL to the website or page that you want to link to in to the text area. You can enter more than one link at a time, just place a space, or start a newline between each link. Then press the "Get" button. After the pages have been retrieved you should have something similar to the picture above. The pictures are changeable, just use the arrows to thumb through the available pictures. The same goes for the text field, which you may manually edit or thumb through some preselected paragraphs from the linked site.', $this->identifier);?>
+			</p>
+			<p>
+			<?php _e('When you are ready to insert a Link Print, just click the "Insert into Post" button (or the "Insert All" button at the bottom to insert multiple Link Prints simultaneously). If you go to the HTML tab in the editor you\'ll see that WP Lynx generates pure HTML. This gives the user full control over their Link Prints.', $this->identifier);?>
+			</p>
+			<p>
+			<?php printf(__('If you think you have found a bug, please include your WordPress version and details on how to reporduce the bug when you %sreport the issue%s.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>');?>
+			</p>
+			</div>
+		<?php }
+		else
+		{?>
 		<form action="<?php echo $formUrl; ?>&amp;type=wp_lynx&amp;TB_iframe=true" method="post" id="llynx_get_url" class="media-upload-form type-form validate">
 			<?php wp_nonce_field('llynx_get_url');?>
 			<h3 class="media-title"><?php _e('Add a Lynx Print','wp_lynx'); ?></h3>
@@ -560,10 +578,11 @@ class linksLynx extends mtekk_admin
 					<tbody>
 						<tr>
 							<th class="label" valign="top" scope="row">
-								<span class="alignleft"><?php _e('URL:')?></span>
+								<span class="alignleft"><?php _e('URL(s):')?></span>
 							</th>
 							<td class="field">
-								<input id="llynx_get_url[url]" type="text" aria-required="true" value="<?php echo $urlString; ?>" name="llynx_get_url[url]" /><input class="button" type="submit" value="<?php _e('Get','wp_lynx');?>" name="llynx_get_url_button"/>
+								<textarea id="llynx_get_url[url]" aria-required="true" name="llynx_get_url[url]" style="height:3.5em;"><?php echo $urlString; ?></textarea>
+								<input class="button" type="submit" value="<?php _e('Get','wp_lynx');?>" name="llynx_get_url_button"/>
 							</td>
 						</tr>
 					</tbody>
@@ -571,10 +590,11 @@ class linksLynx extends mtekk_admin
 			</div>
 		</form>
 		<?php
+		}
 		if(isset($_POST['llynx_get_url']))
 		{
 			//Get urls if any were sent
-			$urls = explode(' ', $_POST['llynx_get_url']['url']);
+			$urls = preg_split('/\s+/',$_POST['llynx_get_url']['url']);
 		?>
 		<div class="hide-if-no-js" id="sort-buttons">
 			<span><?php _e('All Tabs:'); ?><a id="showall" href="#" style="display: inline;"><?php _e('Show'); ?></a><a style="display: none;" id="hideall" href="#"><?php _e('Hide'); ?></a></span>
@@ -782,7 +802,7 @@ class linksLynx extends mtekk_admin
 	protected function _get_help_text()
 	{
 		return sprintf(__('Tips for the settings are located below select options. Please refer to the %sdocumentation%s for more information.', 'wp_lynx'), 
-			'<a title="' . __('Go to the Links Lynx online documentation', 'wp_lynx') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>') .
+			'<a title="' . __('Go to the Links Lynx online documentation', 'wp_lynx') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>') . ' ' .
 			sprintf(__('If you think you have found a bug, please include your WordPress version and details on how to reporduce the bug when you %sreport the issue%s.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>') . '</p>';
 	}
 	/**
