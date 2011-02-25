@@ -2,8 +2,8 @@
 Contributors: mtekk
 Tags: Links, Facebook, post, posts
 Requires at least: 3.0
-Tested up to: 3.0.1
-Stable tag: 0.2.1
+Tested up to: 3.1
+Stable tag: 0.3.0
 WP Lynx allows you to mimic Facebook's wall links in your WordPress posts.
 
 == Description ==
@@ -19,6 +19,14 @@ Don't see your language on the list? Feel free to translate WP Lynx and send Joh
 Please visit [WP Lynx's](http://mtekk.us/code/wp-lynx/#installation "WP Lynx's project page's installation section.") project page for installation and usage instructions.
 
 == Changelog ==
+= 0.3.0 =
+* New feature: Templated Lynx Prints now available.
+* New feature: Tinyurl URL shortening now available.
+* New feature: TinyMCE button added when in full screen editing mode.
+* New feature: Added Help tab to Lynx Print adding screen.
+* New feature: Any whitespace character may be used to separate multiple URLs.
+* Bug fix: Fixed issue where PHP warnings would arise if the remote server did not return the expected data range.
+* Bug fix: Permissions issues for the WordPress Upload directory are handled more gracefully.
 = 0.2.1 =
 * Bug fix: Installer now works properly for first time users.
 = 0.2.0 =
