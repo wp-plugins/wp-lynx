@@ -25,15 +25,15 @@ if(!function_exists('url_to_absolute'))
 class llynxScrape
 {
 	public $opt = array(
-		'p_max_count' => 5,
-		'p_min_length' => 120,
-		'p_max_length' => 180,
-		'img_max_count' => 20,
-		'img_min_x' => 50, 
-		'img_min_y' => 50,
-		'img_max_range' => 256,
-		'curl_agent' => 'WP Links Bot',
-		'curl_timeout' => 2
+		'ap_max_count' => 5,
+		'ap_min_length' => 120,
+		'ap_max_length' => 180,
+		'aimg_max_count' => 20,
+		'aimg_min_x' => 50, 
+		'aimg_min_y' => 50,
+		'aimg_max_range' => 256,
+		'Scurl_agent' => 'WP Links Bot',
+		'acurl_timeout' => 2
 	);
 	public $error = array();
 	public $images = array();
@@ -56,11 +56,11 @@ class llynxScrape
 				CURLOPT_HEADER			=> false,		// Don't return headers
 				CURLOPT_FOLLOWLOCATION	=> !ini_get('safe_mode'),		// Follow redirects, if not in safemode
 				CURLOPT_ENCODING		=> '',			// Handle all encodings
-				CURLOPT_USERAGENT		=> $this->opt['curl_agent'],		// Useragent
+				CURLOPT_USERAGENT		=> $this->opt['Scurl_agent'],		// Useragent
 				CURLOPT_AUTOREFERER		=> true,		// Set referer on redirect
 				CURLOPT_FAILONERROR		=> true,		// Fail silently on HTTP error
-				CURLOPT_CONNECTTIMEOUT	=> $this->opt['curl_timeout'],	// Timeout on connect
-				CURLOPT_TIMEOUT			=> $this->opt['curl_timeout'],	// Timeout on response
+				CURLOPT_CONNECTTIMEOUT	=> $this->opt['acurl_timeout'],	// Timeout on connect
+				CURLOPT_TIMEOUT			=> $this->opt['acurl_timeout'],	// Timeout on response
 				CURLOPT_MAXREDIRS		=> 3,			// Stop after x redirects
 				CURLOPT_SSL_VERIFYHOST	=> 0            // Don't verify ssl
 			);
@@ -95,17 +95,19 @@ class llynxScrape
 	function scrapeContent($url)
 	{
 		//Get our content
-		$content = $this->getContent($url);
-		//Convert to UTF-8
-		$content =  mb_convert_encoding($content, "UTF-8", $this->findEncoding($content));
-		//Strip any script tags
-		$content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', ' ',$content);
-		//Extract images on the page
-		$this->findImages($content, $url);
-		//Extract a few paragraphs from the page
-		$this->findText($content);
-		//Extract the page title
-		$this->findTitle($content);
+		if($content = $this->getContent($url))
+		{
+			//Convert to UTF-8
+			$content =  mb_convert_encoding($content, "UTF-8", $this->findEncoding($content));
+			//Strip any script tags
+			$content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', ' ',$content);
+			//Extract images on the page
+			$this->findImages($content, $url);
+			//Extract a few paragraphs from the page
+			$this->findText($content);
+			//Extract the page title
+			$this->findTitle($content);
+		}
 	}
 	function findEncoding($content)
 	{
@@ -141,7 +143,7 @@ class llynxScrape
 		foreach($rawImages as $image)
 		{
 			//If we've gotten our specified fill, exit early
-			if(count($this->images) >= $this->opt['img_max_count'])
+			if(count($this->images) >= $this->opt['aimg_max_count'])
 			{
 				return null;
 			}
@@ -188,7 +190,7 @@ class llynxScrape
 				else
 				{
 					//Need to get to a frame header for JPEG, default is 256 as all cleaned up JPEGS need this at max
-					$range .= $this->opt['img_max_range'];
+					$range .= $this->opt['aimg_max_range'];
 				}
 				//We only want appropriately sized images
 				if($data = $this->getContent($fixedURL, $baseURL, $range))
@@ -213,7 +215,7 @@ class llynxScrape
 				}
 			}
 			//Check the sizes
-			if($fixedURL && $size[0] >= $this->opt['img_min_x'] && $size[1] >= $this->opt['img_min_y'])
+			if($fixedURL && $size[0] >= $this->opt['aimg_min_x'] && $size[1] >= $this->opt['aimg_min_y'])
 			{
 				$this->images[] = $fixedURL;
 			}
@@ -232,14 +234,14 @@ class llynxScrape
 		foreach($stuff as $paragraph)
 		{
 			//Remove excess whitespace up here, otherwise we will get bad results
-			if($i < $this->opt['p_max_count'] && strlen($save = preg_replace('/(\s\s+|\n)/', ' ',strip_tags($paragraph))) > $this->opt['p_min_length'])
+			if($i < $this->opt['ap_max_count'] && strlen($save = preg_replace('/(\s\s+|\n)/', ' ',strip_tags($paragraph))) > $this->opt['ap_min_length'])
 			{
 				//Keep under max lenght
-				$this->text[] = $this->trimText(trim($save), $this->opt['p_max_length']);
+				$this->text[] = $this->trimText(trim($save), $this->opt['ap_max_length']);
 				$i++;
 			}
 		}
-		if($i < $this->opt['p_max_count'] && $tag == 'p')
+		if($i < $this->opt['ap_max_count'] && $tag == 'p')
 		{
 			$this->findText($content, 'div');
 		}
@@ -333,7 +335,7 @@ class llynxScrape
 					//If we run out of data, return dimensions just larger than min (most JPEGs will be large enough)
 					if(strlen($data) <= 1)
 					{
-						return array($this->opt['img_min_x'] + 1, $this->opt['img_min_y'] + 1);
+						return array($this->opt['aimg_min_x'] + 1, $this->opt['aimg_min_y'] + 1);
 					}
 					$info   = unpack('nmarker', $data);
 					$marker = $info['marker'];
