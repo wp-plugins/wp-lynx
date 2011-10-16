@@ -121,11 +121,6 @@ class linksLynx extends mtekk_adminKit
 		add_action('media_buttons_context', array($this, 'media_buttons_context'));
 		add_action('media_upload_wp_lynx', array($this, 'media_upload'));
 		add_filter('tiny_mce_before_init', array($this, 'add_editor_style'));
-		if(current_user_can('edit_posts') && current_user_can('edit_pages'))
-		{
-			add_filter('mce_external_plugins', array($this, 'add_mce_plugin'));
-			add_filter('mce_buttons', array($this, 'add_mce_button'));
-		}
 	}
 	/**
 	 * security
@@ -161,100 +156,36 @@ class linksLynx extends mtekk_adminKit
 			if(version_compare($version, '0.4.0', '<'))
 			{
 				$old = $opts;
-				$opts = array(
-					'bglobal_style' => $old['global_style'],
-					'ap_max_count' => $old['p_max_count'],
-					'ap_min_length' => $old['p_min_length'],
-					'ap_max_length' => $old['p_max_length'],
-					'aimg_max_count' => $old['img_max_count'],
-					'aimg_min_x' => $old['img_min_x'], 
-					'aimg_min_y' => $old['img_min_y'],
-					'aimg_max_range' => $old['img_max_range'],
-					'Scurl_agent' => $old['curl_agent'],
-					'bcurl_embrowser' => $old['curl_embrowser'],
-					'acurl_timeout' => $old['curl_timeout'],
-					'Scache_type' => $old['cache_type'],
-					'acache_quality' => $old['cache_quality'],
-					'acache_max_x' => $old['cache_max_x'],
-					'acache_max_y' => $old['cache_max_y'],
-					'bcache_crop' => $old['cache_crop'],
-					'bshort_url' => $old['short_url'],
-					'Htemplate' => $old['template'],
-					'Himage_template' => $old['image_template']
-					);
+				//Only migrate if we haven't migrated yet
+				if(isset($old['global_style']))
+				{
+					$opts = array(
+						'bglobal_style' => $old['global_style'],
+						'ap_max_count' => $old['p_max_count'],
+						'ap_min_length' => $old['p_min_length'],
+						'ap_max_length' => $old['p_max_length'],
+						'aimg_max_count' => $old['img_max_count'],
+						'aimg_min_x' => $old['img_min_x'], 
+						'aimg_min_y' => $old['img_min_y'],
+						'aimg_max_range' => $old['img_max_range'],
+						'Scurl_agent' => $old['curl_agent'],
+						'bcurl_embrowser' => $old['curl_embrowser'],
+						'acurl_timeout' => $old['curl_timeout'],
+						'Scache_type' => $old['cache_type'],
+						'acache_quality' => $old['cache_quality'],
+						'acache_max_x' => $old['cache_max_x'],
+						'acache_max_y' => $old['cache_max_y'],
+						'bcache_crop' => $old['cache_crop'],
+						'bshort_url' => $old['short_url'],
+						'Htemplate' => $old['template'],
+						'Himage_template' => $old['image_template']
+						);
+				}
 			}
 			//Save the passed in opts to the object's option array
 			$this->opt = $opts;
 		}
 	}
-	/**
-	 * ops_update
-	 * 
-	 * Updates the database settings from the webform
-	 */
-/*	function opts_update()
-	{
-		global $wp_taxonomies;
-		//Do some security related thigns as we are not using the normal WP settings API
-		$this->security();
-		//Do a nonce check, prevent malicious link/form problems
-		check_admin_referer('llynx_options-options');
-		//Update local options from database
-		$this->opt = $this->get_option('llynx_options');
-		//Update our backup options
-		$this->update_option('llynx_options_bk', $this->opt);
-		//Grab our incomming array (the data is dirty)
-		$input = $_POST['llynx_options'];
-		//Loop through all of the existing options (avoids random setting injection)
-		foreach($this->opt as $option => $value)
-		{
-			//Handle all of our boolean options first
-			if($option == 'trends' || $option == 'backlink' || $option == 'cache_crop' || $option == 'global_style' || $option == 'curl_embrowser' || $option == 'short_url')
-			{
-				$this->opt[$option] = isset($input[$option]);
-			}
-			//Now handle all of the integers
-			else if(strpos($option, 'img_m') === 0 || strpos($option, 'p_m') === 0 || strpos($option, 'cache_m') === 0 || $option == 'cache_quality')
-			{
-				$this->opt[$option] = (int) stripslashes($input[$option]);
-			}
-			//Now handle anything that can't be blank
-			else if(strpos($option, 'curl_') === 0)
-			{
-				//Only save a new anchor if not blank
-				if(isset($input[$option]))
-				{
-					//Do excess slash removal sanitation
-					$this->opt[$option] = stripslashes($input[$option]);
-				}
-			}
-			//Now everything else
-			else
-			{
-				$this->opt[$option] = stripslashes($input[$option]);
-			}
-		}
-		//Commit the option changes
-		$this->update_option('llynx_options', $this->opt);
-		//Check if known settings match attempted save
-		if(count(array_diff_key($input, $this->opt)) == 0)
-		{
-			//Let the user know everything went ok
-			$this->message['updated fade'][] = __('Settings successfully saved.', $this->identifier) . $this->undo_anchor(__('Undo the options save.', $this->identifier));
-		}
-		else
-		{
-			//Let the user know the following were not saved
-			$this->message['updated fade'][] = __('Some settings were not saved.', $this->identifier) . $this->undo_anchor(__('Undo the options save.', $this->identifier));
-			$temp = __('The following settings were not saved:', $this->identifier);
-			foreach(array_diff_key($input, $this->opt) as $setting => $value)
-			{
-				$temp .= '<br />' . $setting;
-			}
-			$this->message['updated fade'][] = $temp . '<br />' . sprintf(__('Please include this message in your %sbug report%s.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>');
-		}
-		add_action('admin_notices', array($this, 'message'));
-	}*/
 	/**
 	 * Adds a style to tiny mce for Link Prints
 	 */
@@ -271,22 +202,6 @@ class linksLynx extends mtekk_adminKit
 			$init['content_css'] = $style;
 		}
 		return $init;
-	}
-	/**
-	 * Adds a tiny mce button for WP Lynx
-	 */
-	function add_mce_button($buttons)
-	{
-		$buttons[] = 'add_link_print';
-		return $buttons;
-	}
-	/**
-	 * Registers our script for the tiny mce button
-	 */
-	function add_mce_plugin($plugins)
-	{
-		$plugins['add_link_print'] = plugins_url('/wp_lynx_mce_button.js', dirname(__FILE__) . '/wp_lynx_mce_button.js');
-		return $plugins;
 	}
 	/**
 	 * media_buttons_context
@@ -565,7 +480,7 @@ class linksLynx extends mtekk_adminKit
 		<form action="<?php echo $formUrl; ?>&amp;type=wp_lynx&amp;TB_iframe=true" method="post" id="llynx_get_url" class="media-upload-form type-form validate">
 			<?php wp_nonce_field('llynx_get_url');?>
 			<h3 class="media-title"><?php _e('Add a Lynx Print','wp_lynx'); ?></h3>
-			<div class="media-item media-blank">
+			<div class="media-blank">
 				<table class="describe">
 					<tbody>
 						<tr>
@@ -763,7 +678,7 @@ class linksLynx extends mtekk_adminKit
 	function head_style()
 	{
 		//Sync our options
-		$this->opt = $this->get_option('llynx_options');
+		$this->opt = get_option('llynx_options');
 		//Only print if enabled
 		if($this->opt['bglobal_style'])
 		{
@@ -833,12 +748,9 @@ class linksLynx extends mtekk_adminKit
 			//Too late to use normal hook, directly display the message
 			$this->message();
 		}
-		$this->version_check($this->get_option($this->unique_prefix . '_version'));
+		$this->version_check(get_option($this->unique_prefix . '_version'));
 		?>
 		<div class="wrap"><h2><?php _e('WP Lynx Settings', 'wp_lynx'); ?></h2>		
-		<p<?php if($this->_has_contextual_help): ?> class="hide-if-js"<?php endif; ?>><?php 
-			print $this->_get_help_text();			 
-		?></p>
 		<form action="options-general.php?page=wp_lynx" method="post" id="llynx-options">
 			<?php settings_fields('llynx_options');?>
 			<div id="hasadmintabs">
@@ -850,7 +762,7 @@ class linksLynx extends mtekk_adminKit
 						$this->input_check(__('Default Style', 'wp_lynx'), 'bglobal_style', __('Enable the default Lynx Prints styling on your blog.', 'wp_lynx'));
 						$this->input_text(__('Maximum Image Width', 'wp_lynx'), 'acache_max_x', '10', false, __('Maximum cached image width in pixels.', 'wp_lynx'));
 						$this->input_text(__('Maximum Image Height', 'wp_lynx'), 'acache_max_y', '10', false, __('Maximum cached image height in pixels.', 'wp_lynx'));
-						$this->input_check(__('Crop Image', 'wp_lynx'), 'acache_crop', __('Crop images in the cache to the above dimensions.', 'wp_lynx'));
+						$this->input_check(__('Crop Image', 'wp_lynx'), 'bcache_crop', __('Crop images in the cache to the above dimensions.', 'wp_lynx'));
 					?>
 					<tr valign="top">
 						<th scope="row">
