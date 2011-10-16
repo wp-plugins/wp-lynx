@@ -140,39 +140,6 @@ class linksLynx extends mtekk_adminKit
 			wp_die(__('Insufficient privileges to proceed.', 'wp_lynx'));
 		}
 	}
-	/** 
-	 * This sets up and upgrades the database settings, runs on every activation
-	 */
-	function install()
-	{
-		//Call our little security function
-		$this->security();
-		//Try retrieving the options from the database
-		$opts = $this->get_option('llynx_version');
-		//If there are no settings, copy over the default settings
-		if(!is_array($opts))
-		{
-			//Add the options
-			$this->add_option('llynx_options', $opts);
-			$this->add_option('llynx_options_bk', $opts, false);
-			//Add the version, no need to autoload the db version
-			$this->add_option('llynx_version', $this->version, false);
-		}
-		else
-		{
-			//Retrieve the database version
-			$db_version = $this->get_option('llynx_version');
-			if($this->version !== $db_version)
-			{
-				//Run the settings update script
-				$this->opts_upgrade($opts, $db_version);
-				//Always have to update the version
-				$this->update_option('llynx_version', $this->version);
-				//Store the options
-				$this->update_option('llynx_options', $this->opt);
-			}
-		}
-	}
 	/**
 	 * Upgrades input options array, sets to $this->opt
 	 * 
