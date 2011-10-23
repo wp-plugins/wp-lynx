@@ -47,6 +47,22 @@ class llynxScrape
 			$this->scrapeContent($url);
 		}
 	}
+	/*function getContentWP($url, $referer = null, $range = null)
+	{
+		$args = array(
+		);
+		$content = wp_remote_get($url, $args);
+		//Error handler
+		if(is_wp_error($content))
+		{
+			
+			return false;
+		}
+		else
+		{
+			return $content['body'];
+		}
+	}*/
 	function getContent($url, $referer = null, $range = null)
 	{
 		if(function_exists('curl_init'))
@@ -100,7 +116,8 @@ class llynxScrape
 			//Convert to UTF-8
 			$content =  mb_convert_encoding($content, "UTF-8", $this->findEncoding($content));
 			//Strip any script tags
-			$content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', ' ',$content);
+			$content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', ' ', $content);
+			$content = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', ' ', $content);
 			//Extract images on the page
 			$this->findImages($content, $url);
 			//Extract a few paragraphs from the page

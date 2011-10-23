@@ -96,10 +96,9 @@ class linksLynx extends mtekk_adminKit
 		$this->llynx_scrape = new llynxScrape(null);
 		//We set the plugin basename here, could manually set it, but this is for demonstration purposes
 		$this->plugin_basename = plugin_basename(__FILE__);
-		//We'll include a defualt style that everyone can enjoy
-		add_action('wp_head', array($this, 'head_style'));
 		//We're going to make sure we load the parent's constructor
 		parent::__construct();
+		add_action('init', array($this, 'wp_init'));
 	}
 	/**
 	 * admin initialisation callback function
@@ -121,6 +120,22 @@ class linksLynx extends mtekk_adminKit
 		add_action('media_buttons_context', array($this, 'media_buttons_context'));
 		add_action('media_upload_wp_lynx', array($this, 'media_upload'));
 		add_filter('tiny_mce_before_init', array($this, 'add_editor_style'));
+	}
+	function wp_init()
+	{
+		//Register CSS for tabs
+		wp_register_style('llynx_style', plugins_url('/wp_lynx_style.css', dirname(__FILE__) . '/wp_lynx_style.css'));
+		//If we are not in the admin, load up our style (if told to)
+		if(!is_admin())
+		{
+			//Sync our options
+			$this->opt = get_option('llynx_options');
+			//Only print if enabled
+			if($this->opt['bglobal_style'])
+			{
+				wp_enqueue_style('llynx_style');
+			}
+		}
 	}
 	/**
 	 * security
@@ -192,7 +207,7 @@ class linksLynx extends mtekk_adminKit
 	function add_editor_style($init)
 	{
 		//build out style link, needs to be http accessible
-		$style = plugins_url('/wp_lynx_mce_style.css', dirname(__FILE__) . '/wp_lynx_mce_style.css');
+		$style = plugins_url('/wp_lynx_style.css', dirname(__FILE__) . '/wp_lynx_style.css');
 		if(array_key_exists('content_css',$init))
 		{
 			$init['content_css'] .= ',' . $style;
@@ -393,7 +408,7 @@ class linksLynx extends mtekk_adminKit
 					$perms = $perms & 0000666;
 					@chmod($imgLoc, $perms);
 					//Remove %image% tag from image template, if there is one
-					$this->opt['Himg_template'] = str_replace('%image%', '', $this->opt['Himg_template']);
+					//$this->opt['Himg_template'] = str_replace('%image%', '', $this->opt['Himg_template']);
 					//Assemble the image and link it, if it exists
 					$values['image'] = sprintf('<a title="Go to %s" href="%s"><img alt="%s" src="%s" width="%s" height="%s" /></a>', stripslashes($data['title']), $values['short_url'], stripslashes($data['title']), $imgURL, $nW, $nH);
 				}
@@ -401,8 +416,6 @@ class linksLynx extends mtekk_adminKit
 		}
 		//Replace the template tags with values
 		return str_replace($this->template_tags, $values, $this->opt['Htemplate']);
-		//Built the entire html link print and return it
-		//return sprintf('<div class="llynx_print">%s <div class="llynx_text">%s <small>%s</small><span>%s</span></div></div>', $values['image'], $urlHtml, $values['url'], $values['description']);
 	}
 	function url_tab()
 	{
@@ -675,26 +688,6 @@ class linksLynx extends mtekk_adminKit
 </style>
 		<?php
 	}
-	function head_style()
-	{
-		//Sync our options
-		$this->opt = get_option('llynx_options');
-		//Only print if enabled
-		if($this->opt['bglobal_style'])
-		{
-		?>
-<style type="text/css">
-/*WP Lynx Styles*/
-.llynx_print{margin:10px;padding:5px;display:block;float:left;border:1px solid #999;}
-.llynx_print img{padding:5px;border:none;max-width:20%;float:left;}
-.llynx_text{float:right;width:70%;}
-.llynx_text a{text-decoration:none;font-weight:bolder;font-size:1em;float:left;width:100%;}
-.llynx_text small{padding:3px 0;float:left;width:100%;}
-.llynx_text span{float:left;width:100%;}
-</style>
-		<?php
-		}
-	}
 	/**
 	 * get help text
 	 * 
@@ -740,6 +733,8 @@ class linksLynx extends mtekk_adminKit
 	{
 		global $wp_taxonomies;
 		$this->security();
+		//Let's call the parent version of the page, will handle our setting stuff
+		parent::admin_page();
 		$uploadDir = wp_upload_dir();
 		if(!isset($uploadDir['path']) || !is_writable($uploadDir['path']))
 		{
@@ -748,9 +743,15 @@ class linksLynx extends mtekk_adminKit
 			//Too late to use normal hook, directly display the message
 			$this->message();
 		}
-		$this->version_check(get_option($this->unique_prefix . '_version'));
 		?>
-		<div class="wrap"><h2><?php _e('WP Lynx Settings', 'wp_lynx'); ?></h2>		
+		<div class="wrap"><h2><?php _e('WP Lynx Settings', 'wp_lynx'); ?></h2>
+		<?php
+		//We exit after the version check if there is an action the user needs to take before saving settings
+		if(!$this->version_check(get_option($this->unique_prefix . '_version')))
+		{
+			return;
+		}
+		?>	
 		<form action="options-general.php?page=wp_lynx" method="post" id="llynx-options">
 			<?php settings_fields('llynx_options');?>
 			<div id="hasadmintabs">

@@ -98,12 +98,6 @@ abstract class mtekk_adminKit
 	}
 	function init()
 	{
-		//Admin Options update hook
-		if(isset($_POST[$this->unique_prefix . '_admin_options']))
-		{
-			//Temporarily add update function on init if form has been submitted
-			$this->opts_update();
-		}
 		//Admin Options reset hook
 		if(isset($_POST[$this->unique_prefix . '_admin_reset']))
 		{
@@ -721,7 +715,12 @@ abstract class mtekk_adminKit
 	 */
 	function admin_page()
 	{
-		
+		//Admin Options update hook
+		if(isset($_POST[$this->unique_prefix . '_admin_options']))
+		{
+			//Temporarily add update function on init if form has been submitted
+			$this->opts_update();
+		}
 	}
 	/**
 	 * Function prototype to prevent errors
