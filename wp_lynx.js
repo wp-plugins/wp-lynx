@@ -1,4 +1,3 @@
-<?php //WP Links Lynx javascript for choosing the thumbnail to use?>
 function next_thumb(id)
 {
 	jQuery("#imgprev-btn-" + id).removeAttr("disabled");

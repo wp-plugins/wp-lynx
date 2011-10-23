@@ -259,8 +259,7 @@ class linksLynx extends mtekk_adminKit
 		add_action('admin_head', array($this, 'admin_head_style'));
 		//We need this to do the nice sorting and other things
 		wp_enqueue_script('admin-gallery');
-		$location = WP_PLUGIN_URL . '/' . str_replace(basename(__FILE__), "", plugin_basename(__FILE__));
-		wp_enqueue_script('llynx_javascript', $location . 'wp_lynx.js.php', array('jquery'));
+		wp_enqueue_script('llynx_javascript', plugins_url('/wp_lynx.js', dirname(__FILE__) . '/wp_lynx.js'), array('jquery'));
 		add_action('wp_lynx_media_upload_header', 'media_upload_header');
 		wp_iframe(array(&$this, 'url_tab'));
 	}
@@ -457,7 +456,6 @@ class linksLynx extends mtekk_adminKit
 		}
 		?>
 		<script type="text/javascript">
-		//post_id = <?php echo $curID; ?>;
 		llynx_imgs = new Array();
 		llynx_cimgs = new Array();
 		llynx_cont = new Array();
