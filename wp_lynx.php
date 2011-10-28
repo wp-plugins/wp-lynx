@@ -479,7 +479,7 @@ class linksLynx extends mtekk_adminKit
 			<?php _e('The Add Lynx Print dialog is simple to use. Just enter the URL to the website or page that you want to link to in to the text area. You can enter more than one link at a time, just place a space, or start a newline between each link. Then press the "Get" button. After the pages have been retrieved you should have something similar to the picture above. The pictures are changeable, just use the arrows to thumb through the available pictures. The same goes for the text field, which you may manually edit or thumb through some preselected paragraphs from the linked site.', $this->identifier);?>
 			</p>
 			<p>
-			<?php _e('When you are ready to insert a Link Print, just click the "Insert into Post" button (or the "Insert All" button at the bottom to insert multiple Link Prints simultaneously). If you go to the HTML tab in the editor you\'ll see that WP Lynx generates pure HTML. This gives the user full control over their Link Prints.', $this->identifier);?>
+			<?php _e('When you are ready to insert a Link Print, just click the "Insert into Post" button (or the "Insert All" button at the bottom to insert multiple Link Prints simultaneously). If you go to the HTML tab in the editor you\'ll see that WP Lynx generates pure HTML. This gives the user full control over their Lynx Prints.', $this->identifier);?>
 			</p>
 			<p>
 			<?php printf(__('If you think you have found a bug, please include your WordPress version and details on how to reporduce the bug when you %sreport the issue%s.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>');?>
@@ -686,16 +686,89 @@ class linksLynx extends mtekk_adminKit
 </style>
 		<?php
 	}
-	/**
-	 * get help text
-	 * 
-	 * @return string
-	 */
-	protected function _get_help_text()
+	function help()
 	{
-		return sprintf(__('Tips for the settings are located below select options. Please refer to the %sdocumentation%s for more information.', 'wp_lynx'), 
-			'<a title="' . __('Go to the Links Lynx online documentation', 'wp_lynx') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>') . ' ' .
-			sprintf(__('If you think you have found a bug, please include your WordPress version and details on how to reporduce the bug when you %sreport the issue%s.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>') . '</p>';
+		$screen = get_current_screen();
+		//Add contextual help on current screen
+		if($screen->id == 'settings_page_' . $this->identifier)
+		{
+			$general_tab = '<p>' . __('Tips for the settings are located below select options.', $this->identifier) .
+				'</p><h5>' . __('Resources', $this->identifier) . '</h5><ul><li>' .
+				sprintf(__("%sTutorials and How Tos%s: There are several guides, tutorials, and how tos available on the author's website.", $this->identifier),'<a title="' . __('Go to the WP Lynx tag archive.', 'breadcrumb_navxt') . '" href="http://mtekk.us/archives/tag/wp-lynx">', '</a>') . '</li><li>' .
+				sprintf(__('%sOnline Documentation%s: Check out the documentation for more indepth technical information.', 'breadcrumb_navxt'), '<a title="' . __('Go to the WP Lynx online documentation', 'breadcrumb_navxt') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>') . '</li><li>' .
+				sprintf(__('%sReport a Bug%s: If you think you have found a bug, please include your WordPress version and details on how to reproduce the bug.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>') . '</li></ul>' . 
+				'<h5>' . __('Giving Back', $this->identifier) . '</h5><ul><li>' .
+				sprintf(__('%sDonate%s: Love WP Lynx and want to help development? Consider buying the author a beer.', $this->identifier),'<a title="' . __('Go to PayPal to give a donation to WP Lynx.', 'breadcrumb_navxt') . '" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=FD5XEU783BR8U&lc=US&item_name=Breadcrumb%20NavXT%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted">', '</a>') . '</li><li>' .
+				sprintf(__('%sTranlate%s: Is your language not available? Contact John Havlik to get translating.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', 'breadcrumb_navxt') . '" href="">', '</a>') . '</li></ul>';
+			
+			$screen->add_help_tab(
+				array(
+				'id' => $this->identifier . '-base',
+				'title' => __('General', $this->identifier),
+				'content' => $general_tab
+				));
+			$quickstart_tab = '<p>' . __('Using WP Lynx is quite simple. Just start writing a new post (or edit an existing post) and click on the paw print next to the WordPress add media icon. After clicking the paw print button, the Add Lynx Print dialog will popup in a lightbox, just like the add media lightbox.', 'breadcrumb_navxt') . '</p><p>' . 
+			__('The Add Lynx Print dialog is simple to use. Just enter the URL to the website or page that you want to link to in to the text area. You can enter more than one link at a time, just place a space, or start a newline between each link. Then press the "Get" button. After the pages have been retrieved you should have something similar to the picture above. The pictures are changeable, just use the arrows to thumb through the available pictures. The same goes for the text field, which you may manually edit or thumb through some preselected paragraphs from the linked site.', $this->identifier) . '</p><p>' .
+			__('When you are ready to insert a Link Print, just click the "Insert into Post" button (or the "Insert All" button at the bottom to insert multiple Link Prints simultaneously). If you go to the HTML tab in the editor you\'ll see that WP Lynx generates pure HTML. This gives the user full control over their Lynx Prints.', $this->identifier) . '</p>';
+			$screen->add_help_tab(
+				array(
+				'id' => $this->identifier . '-quick-start',
+				'title' => __('Quick Start', $this->identifier),
+				'content' => $quickstart_tab
+				));
+			$styling_tab = '<p>' . __('Using the default lynx print template, the following CSS can be used as base for styling your lynx prints.', $this->identifier) . '</p>' .
+				'<pre><code>.llynx_print
+{
+	margin:10px;
+	padding:5px;
+	display:block;
+	float:left;
+	border:1px solid #999;
+}
+.llynx_print img
+{
+	padding:5px;
+	border:none;
+	max-width:20%;
+	float:left;
+}
+.llynx_text
+{
+	float:right;
+	width:70%;
+}
+.llynx_text a
+{
+	text-decoration:none;
+	font-weight:bolder;
+	font-size:1em;
+	float:left;
+	width:100%;
+}
+.llynx_text small
+{
+	padding:3px 0;
+	float:left;
+	width:100%;
+}
+.llynx_text span
+{
+	float:left;
+	width:100%;
+}</code></pre>';
+			$screen->add_help_tab(
+				array(
+				'id' => $this->identifier . '-styling',
+				'title' => __('Styling', $this->identifier),
+				'content' => $styling_tab
+				));
+			$screen->add_help_tab(
+				array(
+				'id' => $this->identifier . '-import-export-reset',
+				'title' => __('Import/Export/Reset', $this->identifier),
+				'content' => $this->import_form()
+				));
+		}	
 	}
 	/**
 	 * enqueue's the tab style sheet on the settings page
@@ -817,7 +890,6 @@ class linksLynx extends mtekk_adminKit
 			</div>
 			<p class="submit"><input type="submit" class="button-primary" name="llynx_admin_options" value="<?php esc_attr_e('Save Changes') ?>" /></p>
 		</form>
-		<?php $this->import_form(); ?>
 		</div>
 		<?php
 	}

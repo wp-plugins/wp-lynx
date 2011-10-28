@@ -41,7 +41,7 @@ abstract class mtekk_adminKit
 		//Initilizes l10n domain
 		$this->local();
 		//Register Help Output
-		add_action('add_screen_help_and_options', array($this, 'help'));
+		//add_action('add_screen_help_and_options', array($this, 'help'));
 	}
 	/**
 	 * Returns the internal mtekk_admin_class version
@@ -162,6 +162,8 @@ abstract class mtekk_adminKit
 			add_action('admin_print_styles-' . $hookname, array($this, 'admin_styles'));
 			//Register admin_print_scripts-$hookname callback
 			add_action('admin_print_scripts-' . $hookname, array($this, 'admin_scripts'));
+			//Register Help Output
+			add_action('load-' . $hookname, array($this, 'help'));
 		}
 	}
 	/**
@@ -658,12 +660,12 @@ abstract class mtekk_adminKit
 	/**
 	 * help action hook function, meant to be overridden
 	 * 
-	 * @param  string $screen
 	 * @return string
 	 * 
 	 */
-	function help($screen)
+	function help()
 	{
+		$screen = get_current_screen();
 		//Add contextual help on current screen
 		if($screen->id == 'settings_page_' . $this->identifier)
 		{
@@ -748,23 +750,23 @@ abstract class mtekk_adminKit
 	}
 	function import_form()
 	{
-		echo '<div id="mtekk_admin_import_export_relocate">';
-		printf('<form action="options-general.php?page=%s" method="post" enctype="multipart/form-data" id="%s_admin_upload">', $this->identifier, $this->unique_prefix);
-		wp_nonce_field($this->unique_prefix . '_admin_import_export');
-		printf('<fieldset id="import_export" class="%s_options">', $this->unique_prefix);
-		echo '<h3>' . __('Import/Export/Reset Settings', $this->identifier) . '</h3>';
-		echo '<p>' . __('Import settings from a XML file, export the current settings to a XML file, or reset to the default settings.', $this->identifier) . '</p>';
-		echo '<table class="form-table"><tr valign="top"><th scope="row">';
-		printf('<label for="%s_admin_import_file">', $this->unique_prefix);
-		_e('Settings File', $this->identifier);
-		echo '</label></th><td>';
-		printf('<input type="file" name="%s_admin_import_file" id="%s_admin_import_file" size="32" /><br /><span class="setting-description">', $this->unique_prefix, $this->unique_prefix);
-		_e('Select a XML settings file to upload and import settings from.', 'breadcrumb_navxt');
-		echo '</span></td></tr></table><p class="submit">';
-		printf('<input type="submit" class="button" name="%s_admin_import" value="' . __('Import', $this->identifier) . '"/>', $this->unique_prefix, $this->unique_prefix);
-		printf('<input type="submit" class="button" name="%s_admin_export" value="' . __('Export', $this->identifier) . '"/>', $this->unique_prefix);
-		printf('<input type="submit" class="button" name="%s_admin_reset" value="' . __('Reset', $this->identifier) . '"/>', $this->unique_prefix, $this->unique_prefix);
-		echo '</p></fieldset></form></div>';
+		$form = '<div id="mtekk_admin_import_export_relocate">';
+		$form .= sprintf('<form action="options-general.php?page=%s" method="post" enctype="multipart/form-data" id="%s_admin_upload">', $this->identifier, $this->unique_prefix);
+		$form .= wp_nonce_field($this->unique_prefix . '_admin_import_export', '_wpnonce', true, false);
+		$form .= sprintf('<fieldset id="import_export" class="%s_options">', $this->unique_prefix);
+		$form .= '<p>' . __('Import settings from a XML file, export the current settings to a XML file, or reset to the default settings.', $this->identifier) . '</p>';
+		$form .= '<table class="form-table"><tr valign="top"><th scope="row">';
+		$form .= sprintf('<label for="%s_admin_import_file">', $this->unique_prefix);
+		$form .= __('Settings File', $this->identifier);
+		$form .= '</label></th><td>';
+		$form .= sprintf('<input type="file" name="%s_admin_import_file" id="%s_admin_import_file" size="32" /><br /><span class="setting-description">', $this->unique_prefix, $this->unique_prefix);
+		$form .= __('Select a XML settings file to upload and import settings from.', 'breadcrumb_navxt');
+		$form .= '</span></td></tr></table><p class="submit">';
+		$form .= sprintf('<input type="submit" class="button" name="%s_admin_import" value="' . __('Import', $this->identifier) . '"/>', $this->unique_prefix, $this->unique_prefix);
+		$form .= sprintf('<input type="submit" class="button" name="%s_admin_export" value="' . __('Export', $this->identifier) . '"/>', $this->unique_prefix);
+		$form .= sprintf('<input type="submit" class="button" name="%s_admin_reset" value="' . __('Reset', $this->identifier) . '"/>', $this->unique_prefix, $this->unique_prefix);
+		$form .= '</p></fieldset></form></div>';
+		return $form;
 	}
 	/**
 	 * This will output a well formed hidden option
