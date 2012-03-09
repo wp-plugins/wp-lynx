@@ -261,7 +261,7 @@ class linksLynx extends mtekk_adminKit
 		wp_enqueue_script('admin-gallery');
 		wp_enqueue_script('llynx_javascript', plugins_url('/wp_lynx.js', dirname(__FILE__) . '/wp_lynx.js'), array('jquery'));
 		add_action('wp_lynx_media_upload_header', 'media_upload_header');
-		wp_iframe(array(&$this, 'url_tab'));
+		wp_iframe(array($this, 'url_tab'));
 	}
 	/**
 	 * resize_image
@@ -699,7 +699,7 @@ class linksLynx extends mtekk_adminKit
 				sprintf(__('%sReport a Bug%s: If you think you have found a bug, please include your WordPress version and details on how to reproduce the bug.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', $this->identifier) . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>') . '</li></ul>' . 
 				'<h5>' . __('Giving Back', $this->identifier) . '</h5><ul><li>' .
 				sprintf(__('%sDonate%s: Love WP Lynx and want to help development? Consider buying the author a beer.', $this->identifier),'<a title="' . __('Go to PayPal to give a donation to WP Lynx.', 'breadcrumb_navxt') . '" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=FD5XEU783BR8U&lc=US&item_name=Breadcrumb%20NavXT%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted">', '</a>') . '</li><li>' .
-				sprintf(__('%sTranlate%s: Is your language not available? Contact John Havlik to get translating.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', 'breadcrumb_navxt') . '" href="">', '</a>') . '</li></ul>';
+				sprintf(__('%sTranslate%s: Is your language not available? Contact John Havlik to get translating.', $this->identifier),'<a title="' . __('Go to the WP Lynx support post for your version.', 'breadcrumb_navxt') . '" href="">', '</a>') . '</li></ul>';
 			
 			$screen->add_help_tab(
 				array(
