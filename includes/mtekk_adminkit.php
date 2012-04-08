@@ -1,6 +1,6 @@
 <?php
 /*  
-	Copyright 2009-2011  John Havlik  (email : mtekkmonkey@gmail.com)
+	Copyright 2009-2012  John Havlik  (email : mtekkmonkey@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ abstract class mtekk_adminKit
 		//Add in the nice "settings" link to the plugins page
 		add_filter('plugin_action_links', array($this, 'filter_plugin_actions'), 10, 2);
 		//Register JS for tabs
-		wp_register_script('mtekk_adminkit_tabs', plugins_url('/mtekk_adminkit_tabs.js', dirname(__FILE__) . '/mtekk_adminkit_tabs.js'));
+		wp_register_script('mtekk_adminkit_tabs', plugins_url('/mtekk_adminkit_tabs.js', dirname(__FILE__) . '/mtekk_adminkit_tabs.js'), array('jquery-ui-tabs'));
 		//Register CSS for tabs
 		wp_register_style('mtekk_adminkit_tabs', plugins_url('/mtekk_adminkit_tabs.css', dirname(__FILE__) . '/mtekk_adminkit_tabs.css'));
 		//Register options
@@ -399,7 +399,7 @@ abstract class mtekk_adminKit
 		}
 		if(is_array($defaults))
 		{
-			return $this->array_merge_recursive($defaults, $r);
+			return mtekk_adminKit::array_merge_recursive($defaults, $r);
 		}
 		return $r;
 	}
@@ -417,7 +417,7 @@ abstract class mtekk_adminKit
 		{
 			if(array_key_exists($key, $arg1) && is_array($value))
 			{
-				$arg1[$key] = $this->array_merge_recursive($arg1[$key], $value);
+				$arg1[$key] = mtekk_adminKit::array_merge_recursive($arg1[$key], $value);
 			}
 			else
 			{

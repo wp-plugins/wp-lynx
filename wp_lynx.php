@@ -35,6 +35,10 @@ if(version_compare(PHP_VERSION, '5.2.0', '<'))
 	//Spit out die messages
 	wp_die(sprintf(__('Your PHP version is too old, please upgrade to a newer version. Your version is %s, this plugin requires %s', 'wp_lynx'), phpversion(), '5.2.0'));
 }
+if(!function_exists('mb_strlen'))
+{
+	require_once(dirname(__FILE__) . '/includes/multibyte_supplicant.php');
+}
 //Include admin base class
 if(!class_exists('mtekk_adminKit'))
 {
