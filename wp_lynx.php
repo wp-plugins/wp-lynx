@@ -133,7 +133,8 @@ class linksLynx extends mtekk_adminKit
 		if(!is_admin())
 		{
 			//Sync our options
-			$this->opt = get_option('llynx_options');
+			$this->opt = $this->parse_args(get_option('llynx_options'), $this->opt);
+			$this->llynx_scrape->opt = $this->opt;
 			//Only print if enabled
 			if($this->opt['bglobal_style'])
 			{
