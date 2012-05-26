@@ -3,7 +3,7 @@
 Plugin Name: WP Lynx
 Plugin URI: http://mtekk.us/code/wp-lynx/
 Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.us/code/wp-lynx/">WP Lynx</a>. 
-Version: 0.4.50
+Version: 0.4.90
 Author: John Havlik
 Author URI: http://mtekk.us/
 License: GPL2
@@ -11,7 +11,7 @@ TextDomain: wp_lynx
 DomainPath: /languages/
 */
 /*  
-	Copyright 2010-2011  John Havlik  (email : mtekkmonkey@gmail.com)
+	Copyright 2010-2012  John Havlik  (email : mtekkmonkey@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ if(!class_exists('llynxScrape'))
  */
 class linksLynx extends mtekk_adminKit
 {
-	protected $version = '0.4.50';
+	protected $version = '0.4.90';
 	protected $full_name = 'WP Lynx Settings';
 	protected $short_name = 'WP Lynx';
 	protected $access_level = 'manage_options';
@@ -514,6 +514,14 @@ class linksLynx extends mtekk_adminKit
 			</div>
 		</form>
 		<?php
+		  $uploadDir = wp_upload_dir();
+		  if(!isset($uploadDir['path']) || !is_writable($uploadDir['path']))
+		  {
+			  //Let the user know their directory is not writable
+			  $this->message['error'][] = __('WordPress uploads directory is not writable, thumbnails will be disabled.', 'wp_lynx');
+			  //Too late to use normal hook, directly display the message
+			  $this->message();
+		  }
 		}
 		if(isset($_POST['llynx_get_url']))
 		{
@@ -521,7 +529,7 @@ class linksLynx extends mtekk_adminKit
 			$urls = preg_split('/\s+/',$_POST['llynx_get_url']['url']);
 		?>
 		<div class="hide-if-no-js" id="sort-buttons">
-			<span><?php _e('All Tabs:'); ?><a id="showall" href="#" style="display: inline;"><?php _e('Show'); ?></a><a style="display: none;" id="hideall" href="#"><?php _e('Hide'); ?></a></span>
+			<span><?php _e('All Prints:'); ?><a id="showall" href="#" style="display: inline;"><?php _e('Show'); ?></a><a style="display: none;" id="hideall" href="#"> <?php _e('Hide'); ?></a></span>
 			<?php _e('Sort Order:'); ?><a id="asc" href="#"><?php _e('Ascending');?></a> | <a id="desc" href="#"><?php _e('Descending'); ?></a> | <a id="clear" href="#"><?php _e('Clear'); ?></a>
 		</div>
 		<form action="<?php echo $formUrl; ?>&amp;type=wp_lynx&amp;TB_iframe=true" method="post" id="llynx_insert_print" class="media-upload-form type-form validate">
@@ -594,8 +602,8 @@ class linksLynx extends mtekk_adminKit
 					<input type="hidden" value="image" id="type-of-<?php echo $key; ?>">
 					<input type="hidden" value="<?php echo $this->llynx_scrape->images[0]; ?>" id="prints<?php echo $key; ?>img" name="prints[<?php echo $key; ?>][img]">
 					<input type="hidden" value="<?php echo $url; ?>" id="prints[<?php echo $key;?>][url]" name="prints[<?php echo $key;?>][url]">
-					<a href="#" class="toggle describe-toggle-on" style="display: block;"><?php _e('Show'); ?></a>
-					<a href="#" class="toggle describe-toggle-off" style="display: none;"><?php _e('Hide'); ?></a>
+					<a href="#" class="toggle describe-toggle-on"><?php _e('Show'); ?></a>
+					<a href="#" class="toggle describe-toggle-off"><?php _e('Hide'); ?></a>
 					<div class="menu_order"> <input type="text" value="0" name="prints[<?php echo $key; ?>][menu_order]" id="prints[<?php echo $key; ?>][menu_order]" class="menu_order_input"></div>
 					<div class="filename new"><span class="title"><?php echo $this->llynx_scrape->title; ?></span></div>
 					<table class="slidetoggle describe startclosed" style="display: none;">
@@ -816,7 +824,7 @@ class linksLynx extends mtekk_adminKit
 		if(!isset($uploadDir['path']) || !is_writable($uploadDir['path']))
 		{
 			//Let the user know their directory is not writable
-			$this->message['error'][] = __('WordPress uploads directory is not writable, thumbnails will be dissabled.', 'wp_lynx');
+			$this->message['error'][] = __('WordPress uploads directory is not writable, thumbnails will be disabled.', 'wp_lynx');
 			//Too late to use normal hook, directly display the message
 			$this->message();
 		}
