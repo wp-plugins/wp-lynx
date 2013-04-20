@@ -1,6 +1,6 @@
 <?php
 /*  
-	Copyright 2010-2012  John Havlik  (email : mtekkmonkey@gmail.com)
+	Copyright 2010-2013  John Havlik  (email : mtekkmonkey@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,22 +48,6 @@ class llynxScrape
 			$this->scrapeContent($url);
 		}
 	}
-	/*function getContentWP($url, $referer = null, $range = null)
-	{
-		$args = array(
-		);
-		$content = wp_remote_get($url, $args);
-		//Error handler
-		if(is_wp_error($content))
-		{
-			
-			return false;
-		}
-		else
-		{
-			return $content['body'];
-		}
-	}*/
 	function getContent($url, $referer = null, $range = null)
 	{
 		if(function_exists('curl_init'))
@@ -192,7 +176,7 @@ class llynxScrape
 		//Trim out everything we don't need
 		$matches = preg_replace('/(charset|\=|\'|\"|\s)/', '', $matches[0]);
 		//Return the charset in uppercase so that mb_convert_encoding can work it's magic
-		if(strtoupper($matches[0]) == '')
+		if(!isset($matches[0]) || strtoupper($matches[0]) == '')
 		{
 			return 'auto';
 		}
@@ -211,6 +195,11 @@ class llynxScrape
 			if(count($this->images) >= $this->opt['aimg_max_count'])
 			{
 				return null;
+			}
+			//If someone did the invalid thing of having no src for an img tag, ignore that tag
+			if(!isset($image['src']))
+			{
+				continue;
 			}
 			if(isset($image['style']) && strpos('width', $image['style']) !== false)
 			{
@@ -359,6 +348,37 @@ class llynxScrape
 	{
 		return url_to_absolute($baseURL, $url);
 	}
+	function is_PNG($data)
+	{
+		//The identity for a PNG is 8Bytes (64bits)long
+		$ident = unpack('Nupper/Nlower', $data);
+		//Make sure we get PNG
+		if($ident['upper'] === 0x89504E47 && $ident['lower'] === 0x0D0A1A0A)
+		{
+			return true;
+		}
+		return false;
+	}
+	function is_GIF($data)
+	{
+		//The identity for a GIF is 6bytes (48Bits)long
+		$ident = unpack('nupper/nmiddle/nlower', $data);
+		//Make sure we get GIF 87a or 89a
+		if($ident['upper'] === 0x4749 && $ident['middle'] === 0x4638 && ($ident['lower'] === 0x3761 || $ident['lower'] === 0x3961))
+		{
+			return false;
+		}
+	}
+	function is_JPEG($data)
+	{
+		$ident = unpack('nmagic/nmarker', $data);
+		//Make sure we're a JPEG
+		if($ident['magic'] === 0xFFD8)
+		{
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * getJPEGImageXY
 	 * 
@@ -453,7 +473,7 @@ class llynxScrape
 	 */
 	function getGIFImageXY($data)
 	{
-		//The identity for a PNG is 6bytes (48Bits)long
+		//The identity for a GIF is 6bytes (48Bits)long
 		$ident = unpack('nupper/nmiddle/nlower', $data);
 		//Make sure we get GIF 87a or 89a
 		if($ident['upper'] !== 0x4749 || $ident['middle'] !== 0x4638 || ($ident['lower'] !== 0x3761 && $ident['lower'] !== 0x3961))

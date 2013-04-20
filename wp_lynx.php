@@ -3,7 +3,7 @@
 Plugin Name: WP Lynx
 Plugin URI: http://mtekk.us/code/wp-lynx/
 Description: Adds Facebook-esq extended link information to your WordPress pages and posts. For details on how to use this plugin visit <a href="http://mtekk.us/code/wp-lynx/">WP Lynx</a>. 
-Version: 0.5.0
+Version: 0.6.0
 Author: John Havlik
 Author URI: http://mtekk.us/
 License: GPL2
@@ -11,7 +11,7 @@ TextDomain: wp_lynx
 DomainPath: /languages/
 */
 /*  
-	Copyright 2010-2012  John Havlik  (email : mtekkmonkey@gmail.com)
+	Copyright 2010-2013  John Havlik  (email : mtekkmonkey@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ if(!class_exists('llynxScrape'))
  */
 class linksLynx extends mtekk_adminKit
 {
-	protected $version = '0.5.0';
+	protected $version = '0.6.0';
 	protected $full_name = 'WP Lynx Settings';
 	protected $short_name = 'WP Lynx';
 	protected $access_level = 'manage_options';
@@ -83,7 +83,10 @@ class linksLynx extends mtekk_adminKit
 					'bshort_url' => false,
 					'Htemplate' => '<div class="llynx_print">%image%<div class="llynx_text"><a title="Go to %title%" href="%url%">%title%</a><small>%url%</small><span>%description%</span></div></div>',
 					'Himage_template' => '',
-					'bog_only' => false);
+					'bog_only' => false,
+					'bwthumbs_enable' => false,
+					'swthumbs_key' => ''
+					);
 	protected $template_tags = array(
 					'%url%',
 					'%short_url%',
@@ -125,6 +128,7 @@ class linksLynx extends mtekk_adminKit
 		add_action('media_buttons_context', array($this, 'media_buttons_context'));
 		add_action('media_upload_wp_lynx', array($this, 'media_upload'));
 		add_filter('tiny_mce_before_init', array($this, 'add_editor_style'));
+		$this->allowed_html = wp_kses_allowed_html('post');
 	}
 	function wp_init()
 	{
@@ -373,14 +377,26 @@ class linksLynx extends mtekk_adminKit
 				//We need to manipulate the url to get the image name
 				$imgName = explode('/', $data['img']);
 				$imgName = end($imgName);
-				$imgExt = explode('.',$imgName);
+				$imgParts = explode('.',$imgName);
+				$imgName = $imgParts[0];
+				if($imgName == '')
+				{
+					$imgName = 'llynx-site-thumb';
+				}
 				//The extension should be the stuff after the last '.', make sure its lower case
-				$imgExt = strtolower(end($imgExt));
-				//Make sure we use a unique filename
-				$fileName = wp_unique_filename($uploadDir['path'], $imgName);
-				//Compile our image location and image URL
-				$imgLoc = $uploadDir['path'] . "/$fileName";
-				$imgURL = $uploadDir['url'] . "/$fileName";
+				$imgExt = strtolower(end($imgParts));
+				if($this->llynx_scrape->is_PNG($imgData))
+				{
+					$imgExt = 'png';
+				}
+				else if($this->llynx_scrape->is_JPEG($imgData))
+				{
+					$imgExt = 'jpg';
+				}
+				else if($this->llynx_scrape->is_GIF($imgData))
+				{
+					$imgExt = 'gif';
+				}
 				//Generate the thumbnail
 				$nH = 0;
 				$nW = 0;
@@ -389,21 +405,34 @@ class linksLynx extends mtekk_adminKit
 				//If we will be saving as jpeg
 				if($this->opt['Scache_type'] == 'jpeg' || ($this->opt['Scache_type'] == 'original' && ($imgExt == 'jpg' || $imgExt == 'jpeg')))
 				{
+					//Make sure we use a unique filename
+					$fileName = wp_unique_filename($uploadDir['path'], $imgName . '.jpg');
+					//Compile our image location and image URL
+					$imgLoc = $uploadDir['path'] . '/' . $fileName;
 					//Save as JPEG
 					$saved = imagejpeg($imgThumb, $imgLoc, $this->opt['acache_quality']);
 				}
 				//If we will be saving as png
 				else if($this->opt['Scache_type'] == 'png' || ($this->opt['Scache_type'] == 'original' && $imgExt == 'png'))
 				{
+					//Make sure we use a unique filename
+					$fileName = wp_unique_filename($uploadDir['path'], $imgName . '.png');
+					//Compile our image location and image URL
+					$imgLoc = $uploadDir['path'] . '/' . $fileName;
 					//Save as PNG
 					$saved = imagepng($imgThumb, $imgLoc);
 				}
 				//If we will be saving as gif
 				else
 				{
+					//Make sure we use a unique filename
+					$fileName = wp_unique_filename($uploadDir['path'], $imgName . '.gif');
+					//Compile our image location and image URL
+					$imgLoc = $uploadDir['path'] . '/' . $fileName;
 					//Save as GIF
 					$saved = imagegif($imgThumb, $imgLoc);
 				}
+				$imgURL = $uploadDir['url'] . '/' . $fileName;
 				//If the image was saved, we'll allow the image tag to be replaced
 				if($saved)
 				{
@@ -597,6 +626,19 @@ class linksLynx extends mtekk_adminKit
 					{
 						$this->llynx_scrape->images = array();
 					}
+					else if($this->opt['bwthumbs_enable'])
+					{
+						//Backup our array of images
+						$temp_array = $this->llynx_scrape->images;
+						//Clear our array of images
+						$this->llynx_scrape->images = array();
+						//Keep the #0 slot the same (respect open graph)
+						$this->llynx_scrape->images[0] = array_shift($temp_array);
+						//Splice in the screen cap of the site
+						$this->llynx_scrape->images[1] = sprintf('http://api.snapito.com/web/%s/mc?url=%s', $this->opt['swthumbs_key'], $url);
+						//Place the rest at the end
+						$this->llynx_scrape->images = array_merge($this->llynx_scrape->images, $temp_array);
+					}
 					?>
 				<div class="media-item child-of-<?php echo $curID; ?> preloaded" id="media-item-<?php echo $key; ?>">
 					<input type="hidden" value="image" id="type-of-<?php echo $key; ?>">
@@ -646,7 +688,8 @@ class linksLynx extends mtekk_adminKit
 							<td>
 								<p><input type="text" aria-required="true" value="<?php echo $this->llynx_scrape->title; ?>" name="prints[<?php echo $key; ?>][title]" id="prints[<?php echo $key; ?>][title]" class="text"><br />
 								<small><?php echo $url; ?></small></p>
-								<p><textarea name="prints[<?php echo $key; ?>][content]" id="prints<?php echo $key; ?>content" type="text"><?php echo $this->llynx_scrape->text[0];?></textarea></p>
+								<p><textarea name="prints[<?php echo $key; ?>][content]" id="prints<?php echo $key; ?>content" type="text"><?php if(isset($this->llynx_scrape->text[0])){echo $this->llynx_scrape->text[0];}?></textarea>
+								</p>
 								<p>
 									<input type="button" value="&lt;" class="button disabled" disabled="disabled" onclick="prev_content(<?php echo $key; ?>)" id="contprev-btn-<?php echo $key; ?>">
 									<input type="button" value="&gt;" <?php if(count($this->llynx_scrape->text) <= 1){echo 'disabled="disabled" class="disabled button"';}else{echo 'class="button"';}?> onclick="next_content(<?php echo $key; ?>)" id="contnext-btn-<?php echo $key; ?>">
@@ -708,12 +751,12 @@ class linksLynx extends mtekk_adminKit
 		{
 			$general_tab = '<p>' . __('Tips for the settings are located below select options.', 'wp_lynx') .
 				'</p><h5>' . __('Resources', 'wp_lynx') . '</h5><ul><li>' .
-				sprintf(__("%sTutorials and How Tos%s: There are several guides, tutorials, and how tos available on the author's website.", 'wp_lynx'),'<a title="' . __('Go to the WP Lynx tag archive.', 'breadcrumb_navxt') . '" href="http://mtekk.us/archives/tag/wp-lynx">', '</a>') . '</li><li>' .
-				sprintf(__('%sOnline Documentation%s: Check out the documentation for more indepth technical information.', 'breadcrumb_navxt'), '<a title="' . __('Go to the WP Lynx online documentation', 'breadcrumb_navxt') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>') . '</li><li>' .
+				sprintf(__("%sTutorials and How Tos%s: There are several guides, tutorials, and how tos available on the author's website.", 'wp_lynx'),'<a title="' . __('Go to the WP Lynx tag archive.', 'wp_lynx') . '" href="http://mtekk.us/archives/tag/wp-lynx">', '</a>') . '</li><li>' .
+				sprintf(__('%sOnline Documentation%s: Check out the documentation for more indepth technical information.', 'wp_lynx'), '<a title="' . __('Go to the WP Lynx online documentation', 'wp_lynx') . '" href="http://mtekk.us/code/wp-lynx/wp-lynx-doc/">', '</a>') . '</li><li>' .
 				sprintf(__('%sReport a Bug%s: If you think you have found a bug, please include your WordPress version and details on how to reproduce the bug.', 'wp_lynx'),'<a title="' . __('Go to the WP Lynx support post for your version.', 'wp_lynx') . '" href="http://mtekk.us/archives/wordpress/plugins-wordpress/wp-lynx-' . $this->version . '/#respond">', '</a>') . '</li></ul>' . 
 				'<h5>' . __('Giving Back', 'wp_lynx') . '</h5><ul><li>' .
-				sprintf(__('%sDonate%s: Love WP Lynx and want to help development? Consider buying the author a beer.', 'wp_lynx'),'<a title="' . __('Go to PayPal to give a donation to WP Lynx.', 'wp_lynx') . '" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=FD5XEU783BR8U&lc=US&item_name=Breadcrumb%20NavXT%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted">', '</a>') . '</li><li>' .
-				sprintf(__('%sTranslate%s: Is your language not available? Contact John Havlik to get translating.', 'wp_lynx'),'<a title="' . __('Go to the WP Lynx support post for your version.', 'wp_lynx') . '" href="">', '</a>') . '</li></ul>';
+				sprintf(__('%sDonate%s: Love WP Lynx and want to help development? Consider buying the author a beer.', 'wp_lynx'),'<a title="' . __('Go to PayPal to give a donation to WP Lynx.', 'wp_lynx') . '" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=FD5XEU783BR8U&lc=US&item_name=WP%20Lynx%20Donation&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted">', '</a>') . '</li><li>' .
+				sprintf(__('%sTranslate%s: Is your language not available? Contact John Havlik to get translating.', 'wp_lynx'),'<a title="' . __('Go to the WP Lynx support post for your version.', 'wp_lynx') . '" href="http://translate.mtekk.us">', '</a>') . '</li></ul>';
 			
 			$screen->add_help_tab(
 				array(
@@ -841,16 +884,31 @@ class linksLynx extends mtekk_adminKit
 			<?php settings_fields('llynx_options');?>
 			<div id="hasadmintabs">
 			<fieldset id="general" class="llynx_options">
+				<h3 class="tab-title" title="<?php _e('A collection of settings most likely to be modified are located under this tab.', 'wp_lynx');?>"><?php _e('General', 'wp_lynx'); ?></h3>
 				<h3><?php _e('General', 'wp_lynx'); ?></h3>
 				<table class="form-table">
 					<?php
 						$this->input_check(__('Open Graph Only Mode', 'wp_lynx'), 'bog_only', __("For sites with Open Graph metadata, only fetch that data.", 'wp_lynx'));
 						$this->input_check(__('Shorten URL', 'wp_lynx'), 'bshort_url', __('Shorten URL using a URL shortening service such as tinyurl.com.', 'wp_lynx'));
 						$this->input_check(__('Default Style', 'wp_lynx'), 'bglobal_style', __('Enable the default Lynx Prints styling on your blog.', 'wp_lynx'));
-						$this->input_text(__('Maximum Image Width', 'wp_lynx'), 'acache_max_x', '10', false, __('Maximum cached image width in pixels.', 'wp_lynx'));
-						$this->input_text(__('Maximum Image Height', 'wp_lynx'), 'acache_max_y', '10', false, __('Maximum cached image height in pixels.', 'wp_lynx'));
-						$this->input_check(__('Crop Image', 'wp_lynx'), 'bcache_crop', __('Crop images in the cache to the above dimensions.', 'wp_lynx'));
 					?>
+				</table>
+			</fieldset>
+			<fieldset id="content" class="llynx_options">
+				<h3 class="tab-title" title="<?php _e('Settings related to how Lynx Prints will display.', 'wp_lynx');?>"><?php _e('Content', 'wp_lynx'); ?></h3>
+				<h3><?php _e('Content', 'wp_lynx'); ?></h3>
+				<table class="form-table">
+				<?php
+					$this->textbox(__('Lynx Print Template', 'wp_lynx'), 'Htemplate', 3, false, __('Available tags: ', 'wp_lynx') . implode(', ', $this->template_tags));
+				?>
+				</table>
+				<h3><?php _e('Images', 'wp_lynx'); ?></h3>
+				<table class="form-table">
+				<?php
+					$this->input_text(__('Maximum Image Width', 'wp_lynx'), 'acache_max_x', 'small-text', false, __('Maximum cached image width in pixels.', 'wp_lynx'));
+					$this->input_text(__('Maximum Image Height', 'wp_lynx'), 'acache_max_y', 'small-text', false, __('Maximum cached image height in pixels.', 'wp_lynx'));
+					$this->input_check(__('Crop Image', 'wp_lynx'), 'bcache_crop', __('Crop images in the cache to the above dimensions.', 'wp_lynx'));
+				?>
 					<tr valign="top">
 						<th scope="row">
 							<?php _e('Cached Image Format', 'wp_lynx'); ?>
@@ -866,39 +924,42 @@ class linksLynx extends mtekk_adminKit
 						</td>
 					</tr>
 					<?php
-						$this->input_text(__('Cache Image Quality', 'wp_lynx'), 'acache_quality', '10', false, __('Image quality when cached images are saved as JPEG.', 'wp_lynx'));
-					?>
-				</table>
-			</fieldset>
-			<fieldset id="images" class="llynx_options">
-				<h3><?php _e('Images', 'wp_lynx'); ?></h3>
-				<table class="form-table">
-					<?php
-						$this->input_text(__('Minimum Image Width', 'wp_lynx'), 'aimg_min_x', '10', false, __('Minimum width of images to scrape in pixels.', 'wp_lynx'));
-						$this->input_text(__('Minimum Image Height', 'wp_lynx'), 'aimg_min_y', '10', false, __('Minimum hieght of images to scrape in pixels.', 'wp_lynx'));
-						$this->input_text(__('Maximum Image Count', 'wp_lynx'), 'aimg_max_count', '10', false, __('Maximum number of images to scrape.', 'wp_lynx'));
-						$this->input_text(__('Maximum Image Scrape Size', 'wp_lynx'), 'aimg_max_range', '10', false, __('Maximum number of bytes to download when determining the dimensions of JPEG images.', 'wp_lynx'));
-					?>
-				</table>
-			</fieldset>
-			<fieldset id="text" class="llynx_options">
-				<h3><?php _e('Text', 'wp_lynx'); ?></h3>
-				<table class="form-table">
-					<?php
-						$this->input_text(__('Minimum Paragraph Length', 'wp_lynx'), 'ap_min_length', '10', false, __('Minimum paragraph length to be scraped (in characters).', 'wp_lynx'));
-						$this->input_text(__('Maximum Paragraph Length', 'wp_lynx'), 'ap_max_length', '10', false, __('Maximum paragraph length before it is cutt off (in characters).', 'wp_lynx'));
-						$this->input_text(__('Minimum Paragraph Count', 'wp_lynx'), 'ap_max_count', '10', false, __('Maximum number of paragraphs to scrape.', 'wp_lynx'));
+						$this->input_text(__('Cache Image Quality', 'wp_lynx'), 'acache_quality', 'small-text', false, __('Image quality when cached images are saved as JPEG.', 'wp_lynx'));
 					?>
 				</table>
 			</fieldset>
 			<fieldset id="advanced" class="llynx_options">
+				<h3 class="tab-title" title="<?php _e('Advanced settings for the WP Lynx content scraping engine.', 'wp_lynx');?>"><?php _e('Advanced', 'wp_lynx'); ?></h3>
 				<h3><?php _e('Advanced', 'wp_lynx'); ?></h3>
 				<table class="form-table">
 					<?php
-						$this->textbox(__('Lynx Print Template', 'wp_lynx'), 'Htemplate', 3, false, __('Available tags: ', 'wp_lynx') . implode(', ', $this->template_tags));
-						$this->input_text(__('Timeout', 'wp_lynx'), 'acurl_timeout', '10', false, __('Maximum time for scrape execution in seconds.', 'wp_lynx'));
-						$this->input_text(__('Useragent', 'wp_lynx'), 'Scurl_agent', '32', $this->opt['bcurl_embrowser'], __('Useragent to use during scrape execution.', 'wp_lynx'));
+						$this->input_text(__('Timeout', 'wp_lynx'), 'acurl_timeout', 'small-text', false, __('Maximum time for scrape execution in seconds.', 'wp_lynx'));
+						$this->input_text(__('Useragent', 'wp_lynx'), 'Scurl_agent', 'large-text', $this->opt['bcurl_embrowser'], __('Useragent to use during scrape execution.', 'wp_lynx'));
 						$this->input_check(__('Emulate Browser', 'wp_lynx'), 'bcurl_embrowser', __("Useragent will be exactly as the users's browser.", 'wp_lynx'));
+					?>
+				</table>
+				<h3><?php _e('Thumbnails', 'wp_lynx'); ?></h3>
+				<table class="form-table">
+					<?php
+						$this->input_check(__('Enable Website Thumbnails', 'wp_lynx'), 'bwthumbs_enable', __('Enable generation of Website Thumbails via a 3rd party provider (snapito.com)', 'wp_lynx'));
+						$this->input_text(__('API Key', 'wp_lynx'), 'swthumbs_key', 'large-text', false, __('Your API key for the 3rd party thumbnail provider (snapito.com)', 'wp_lynx'));
+					?>
+				</table>
+				<h3><?php _e('Images', 'wp_lynx'); ?></h3>
+				<table class="form-table">
+					<?php
+						$this->input_text(__('Minimum Image Width', 'wp_lynx'), 'aimg_min_x', 'small-text', false, __('Minimum width of images to scrape in pixels.', 'wp_lynx'));
+						$this->input_text(__('Minimum Image Height', 'wp_lynx'), 'aimg_min_y', 'small-text', false, __('Minimum hieght of images to scrape in pixels.', 'wp_lynx'));
+						$this->input_text(__('Maximum Image Count', 'wp_lynx'), 'aimg_max_count', 'small-text', false, __('Maximum number of images to scrape.', 'wp_lynx'));
+						$this->input_text(__('Maximum Image Scrape Size', 'wp_lynx'), 'aimg_max_range', 'small-text', false, __('Maximum number of bytes to download when determining the dimensions of JPEG images.', 'wp_lynx'));
+					?>
+				</table>
+				<h3><?php _e('Text', 'wp_lynx'); ?></h3>
+				<table class="form-table">
+					<?php
+						$this->input_text(__('Minimum Paragraph Length', 'wp_lynx'), 'ap_min_length', 'small-text', false, __('Minimum paragraph length to be scraped (in characters).', 'wp_lynx'));
+						$this->input_text(__('Maximum Paragraph Length', 'wp_lynx'), 'ap_max_length', 'small-text', false, __('Maximum paragraph length before it is cutt off (in characters).', 'wp_lynx'));
+						$this->input_text(__('Minimum Paragraph Count', 'wp_lynx'), 'ap_max_count', 'small-text', false, __('Maximum number of paragraphs to scrape.', 'wp_lynx'));
 					?>
 				</table>
 			</fieldset>
