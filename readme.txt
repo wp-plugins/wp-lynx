@@ -2,7 +2,7 @@
 Contributors: mtekk
 Tags: Links, Facebook, Open Graph, post, posts
 Requires at least: 3.9
-Tested up to: 4.1
+Tested up to: 4.3
 Stable tag: 1.0.0
 WP Lynx allows you to mimic Facebook's wall links in your WordPress posts.
 
